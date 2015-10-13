@@ -14,6 +14,8 @@ namespace AR_Materials
       {
          try
          {
+            AutoCAD_PIK_Manager.Log.Info("Plugin AR_Materials Start Command MaterialsCalc");
+
             Inspector.Clear();
             Counter.Clear();
                         
@@ -52,6 +54,7 @@ namespace AR_Materials
          {
             Document doc = Application.DocumentManager.MdiActiveDocument;
             doc.Editor.WriteMessage("\n{0}", ex.ToString());
+            AutoCAD_PIK_Manager.Log.Error(ex, "MaterialsCalc");
          }
       } 
    }
