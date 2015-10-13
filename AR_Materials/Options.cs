@@ -34,7 +34,7 @@ namespace AR_Materials
       private string _apertureBlAttrTagHeight = "Высота";
       // Workspace - рабочие области
       private string _workspaceBlAttrTagSection = "Секция";
-      private string _workspaceBlAttrTagProject = "Адрес";
+      private string _workspaceBlAttrTagStorey = "Этаж";
       // Supplement - добавки к площади или длине
       private string _supplementBlAttrTagOwner = "Принадлежность";
       private string _supplementBlAttrTagMaterial = "Материал";
@@ -63,7 +63,7 @@ namespace AR_Materials
       public string RoomBlAttrTagCarnice { get { return _roomBlAttrTagCarnice; } }
       public string RoomBlAttrTagDescription { get { return _roomBlAttrTagDescription; } }      
       public string WorkspaceBlAttrTagSection { get { return _workspaceBlAttrTagSection; } }
-      public string WorkspaceBlAttrTagProject { get { return _workspaceBlAttrTagProject; } }
+      public string WorkspaceBlAttrTagStorey { get { return _workspaceBlAttrTagStorey; } }
       public string SupplementBlAttrTagOwner { get { return _supplementBlAttrTagOwner; } }
       public string SupplementBlAttrTagOperation { get { return _supplementBlAttrTagOperation; } }
       public string SupplementBlAttrTagMaterial { get { return _supplementBlAttrTagMaterial; } }

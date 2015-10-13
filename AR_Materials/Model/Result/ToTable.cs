@@ -116,7 +116,7 @@ namespace AR_Materials.Model
                   foreach (var item in ceilMaterials)
                   {
                      table.Cells[row + i, (int)ColEnum.CeilMaterial].TextString = item.Name;
-                     table.Cells[row + i, (int)ColEnum.CeilArea].TextString = item.Value.ToString();
+                     table.Cells[row + i, (int)ColEnum.CeilArea].TextString = item.PresentValue;
                      i++;
                   }
                   // Матенриалы Потолочного карниза (типы)                  
@@ -125,7 +125,7 @@ namespace AR_Materials.Model
                   foreach (var item in carniceMaterials)
                   {
                      table.Cells[row + i, (int)ColEnum.CarniceMaterial].TextString = item.Name;
-                     table.Cells[row + i, (int)ColEnum.CarniceLenght].TextString = item.Value.ToString();
+                     table.Cells[row + i, (int)ColEnum.CarniceLenght].TextString = item.PresentValue;
                      i++;
                   }
                   // Стены                  
@@ -134,7 +134,7 @@ namespace AR_Materials.Model
                   foreach (var item in wallMaterials)
                   {
                      table.Cells[row + i, (int)ColEnum.WallMaterial].TextString = item.Name;
-                     table.Cells[row + i, (int)ColEnum.WallArea].TextString = item.Value.ToString();
+                     table.Cells[row + i, (int)ColEnum.WallArea].TextString = item.PresentValue;
                      i++;
                   }
                   // Полы                  
@@ -143,7 +143,7 @@ namespace AR_Materials.Model
                   foreach (var item in deckMaterials)
                   {
                      table.Cells[row + i, (int)ColEnum.DeckMaterial].TextString = item.Name;
-                     table.Cells[row + i, (int)ColEnum.DeckArea].TextString = item.Value.ToString();
+                     table.Cells[row + i, (int)ColEnum.DeckArea].TextString = item.PresentValue;
                      i++;
                   }
                   // Плинтус                  
@@ -152,7 +152,7 @@ namespace AR_Materials.Model
                   foreach (var item in baseboardMaterials)
                   {
                      table.Cells[row + i, (int)ColEnum.BaseboardMaterial].TextString = item.Name;
-                     table.Cells[row + i, (int)ColEnum.BaseboardLenght].TextString = item.Value.ToString();
+                     table.Cells[row + i, (int)ColEnum.BaseboardLenght].TextString = item.PresentValue;
                      i++;
                   }
                   // Примечание                                    

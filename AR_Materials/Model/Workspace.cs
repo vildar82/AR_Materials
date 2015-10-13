@@ -11,16 +11,21 @@ namespace AR_Materials.Model
    {
       private Extents3d _extents;      
       private string _section;
-      private string _project;
+      private string _storey;
 
       public Extents3d Extents { get { return _extents; } }
       public string Section { get { return _section; } }
-      public string Project { get { return _project; } }
+      public string Storey { get { return _storey; } }
 
       public Workspace(BlockReference blRef)
-      {         
-         _extents = blRef.GeometricExtents;
-         getAttrs(blRef);
+      {
+         _section = ""; // не обязательно должна быть секция
+         _storey = ""; // ? не уверен. может быть помещение без этажа?
+         if (blRef != null)
+         {         
+            _extents = blRef.GeometricExtents;            
+            getAttrs(blRef);
+         }         
       }
 
       private void getAttrs(BlockReference blRef)
@@ -35,9 +40,10 @@ namespace AR_Materials.Model
                {
                   _section = atr.TextString;
                }
-               else if (tag.Equals(Options.Instance.WorkspaceBlAttrTagProject.ToUpper()))
+               // Этаж
+               else if (tag.Equals(Options.Instance.WorkspaceBlAttrTagStorey.ToUpper()))
                {
-                  _project = atr.TextString;
+                  _storey = atr.TextString;
                }
             }
          }
@@ -46,6 +52,22 @@ namespace AR_Materials.Model
       public bool Equals(Workspace other)
       {
          return _section.ToUpper() == other._section.ToUpper();  
+      }
+
+      private void checkParams(BlockReference blRef)
+      {
+         bool haserr = false;
+         string msg = string.Format("Ошибка в блоке {0}: ", Options.Instance.BlockWorkspaceName);
+         // Длина
+         if (string.IsNullOrEmpty (_storey) )
+         {
+            msg += "Этаж не определен. ";
+            haserr = true;
+         }
+         if (haserr)
+         {
+            Inspector.AddError(msg, blRef);
+         }
       }
    }
 }

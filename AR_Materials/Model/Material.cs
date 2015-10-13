@@ -10,10 +10,22 @@ namespace AR_Materials.Model
    {
       private string _name;
       private double _value;
+      private double _presentvalue;
       private EnumConstructionType _construction;
 
       public string Name { get { return _name; } }
+      /// <summary>
+      /// расчетное значение величины. в мм.
+      /// </summary>
       public double Value { get { return _value; } set { _value = value; } }
+      public string PresentValue
+      {
+         get
+         {            
+            return getPresentValue();
+         }
+      }      
+
       public EnumConstructionType Construction { get { return _construction; } }
 
       public Material(string name, EnumConstructionType constrType)
@@ -21,6 +33,31 @@ namespace AR_Materials.Model
          _name = name;
          _construction = constrType;
          _value = 0;
+      }
+
+      private string getPresentValue()
+      {
+         // _value - в мм.
+         // вернуть в м, и округленно до 2 знаков.         
+         double factor = 0;
+
+         switch (_construction)
+         {
+            case EnumConstructionType.Wall:               
+            case EnumConstructionType.Deck:               
+            case EnumConstructionType.Ceil:
+               factor = 0.000001; // перевод в м2
+               break;
+            case EnumConstructionType.Baseboard:               
+            case EnumConstructionType.Carnice:
+               factor = 0.001; // перевод в м
+               break;
+            case EnumConstructionType.Undefined:
+               break;
+            default:
+               break;
+         }
+         return Math.Round(_value * factor, 2).ToString();
       }
    }
 }

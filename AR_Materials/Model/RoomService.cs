@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 
 namespace AR_Materials.Model
@@ -31,12 +33,20 @@ namespace AR_Materials.Model
 
       public void FindAllBlocks()
       {
+         Document doc = Application.DocumentManager.MdiActiveDocument;
+         Editor ed = doc.Editor;
+         var resSel = ed.GetSelection();
+         if (resSel.Status != PromptStatus.OK)
+         {
+            throw new Exception("Отменено пользователем");            
+         }        
+           
          // Поиск блоков помещений на чертеже и блоков проемов
          Database db = HostApplicationServices.WorkingDatabase;
          using (var t = db.TransactionManager.StartTransaction())
          {
-            var ms = t.GetObject(SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForRead) as BlockTableRecord;
-            foreach (ObjectId idEnt in ms)
+            //var ms = t.GetObject(SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForRead) as BlockTableRecord;
+            foreach (ObjectId idEnt in resSel.Value.GetObjectIds())
             {
                if (idEnt.ObjectClass.Name == "AcDbBlockReference")
                {
@@ -159,14 +169,21 @@ namespace AR_Materials.Model
       // Определение принадлежности помещения рабочей области
       private void findRoomsWorkspace()
       {
+         var defaultWS = new Workspace(null);
+         bool isFindWS = false;
          foreach (var room in _rooms)
          {
             foreach (var ws in _ws)
             {
                if (isPointInBounds(room.Position, ws.Extents))
                {
-                  room.Ws = ws; 
+                  room.Ws = ws;
+                  isFindWS = true; 
                }
+            }
+            if (!isFindWS)
+            {
+               room.Ws = defaultWS; 
             }
          }
       }

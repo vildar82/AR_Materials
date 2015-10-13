@@ -56,7 +56,7 @@ namespace AR_Materials.Model
          _floor = "";
          _name = "";         
          _idBlRefRoom = blRefRoom.Id;
-         _position = blRefRoom.Position;
+         _position = blRefRoom.Position;         
          // Определение параметров помещения
          getParamsFromAttrs(blRefRoom);
          checkParams(blRefRoom);  
