@@ -18,6 +18,7 @@ namespace AR_Materials.Model
       private string _owner; // Принадлежность (Имя квартиры или МОП)
       private string _description; // Примечание
       private string _floor; // Этаж
+      private int _number; // Номер помещения
       private int _height;
       private double _perimeter; // Длина полилинии
       private double _areaPoly; // Площадь полилинии      
@@ -29,6 +30,7 @@ namespace AR_Materials.Model
       public List<Material> Materials { get { return _materials; } }
       public int Height { get { return _height; } }
       public string Floor { get { return _floor; } }
+      public int Number { get { return _number; } }
       /// <summary>
       /// Имя помещения
       /// </summary>
@@ -54,7 +56,8 @@ namespace AR_Materials.Model
          _sups = new List<Supplement>();
          _toilets = new List<Toilet>();
          _floor = "";
-         _name = "";         
+         _name = "";
+         _number = 0;      
          _idBlRefRoom = blRefRoom.Id;
          _position = blRefRoom.Position;         
          // Определение параметров помещения
@@ -72,12 +75,17 @@ namespace AR_Materials.Model
                // Принадлежность - имя квартиры или МОП 
                if (tag.Equals(Options.Instance.RoomBlAttrTagOwner.ToUpper()))
                {
-                  _owner = atrRef.TextString; 
+                  _owner = atrRef.TextString.ClearString();
                }
                // Наименование помещения
                else if (tag.Equals(Options.Instance.RoomBlAttrTagName.ToUpper()))
                {
-                  _name = atrRef.TextString;
+                  _name = atrRef.TextString.ClearString();
+               }
+               // Номер помещения
+               else if (tag.Equals(Options.Instance.RoomBlAttrTagNumber.ToUpper()))
+               {
+                  int.TryParse(atrRef.TextString, out _number);
                }
                // Высота
                else if (tag.Equals(Options.Instance.RoomBlAttrTagHeight.ToUpper()))
@@ -87,37 +95,37 @@ namespace AR_Materials.Model
                // Стены
                else if (tag.Equals(Options.Instance.RoomBlAttrTagWall.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString, EnumConstructionType.Wall);
+                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Wall);
                   _materials.Add(material);
                }
                // Потолок
                else if (tag.Equals(Options.Instance.RoomBlAttrTagCeil.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString, EnumConstructionType.Ceil);
+                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Ceil);
                   _materials.Add(material);                  
                }
                // Пол
                else if (tag.Equals(Options.Instance.RoomBlAttrTagDeck.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString, EnumConstructionType.Deck);
+                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Deck);
                   _materials.Add(material);                  
                }
                // Плинтус
                else if (tag.Equals(Options.Instance.RoomBlAttrTagBaseboard.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString, EnumConstructionType.Baseboard);
+                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Baseboard);
                   _materials.Add(material);
                }
                // Карниз
                else if (tag.Equals(Options.Instance.RoomBlAttrTagCarnice.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString, EnumConstructionType.Carnice);
+                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Carnice);
                   _materials.Add(material);
                }
                // Примечание
                else if (tag.Equals(Options.Instance.RoomBlAttrTagDescription.ToUpper()))
                {
-                  _description = atrRef.TextString;
+                  _description = atrRef.TextString.ClearString();
                }
             }
          }
@@ -217,7 +225,7 @@ namespace AR_Materials.Model
                   case EnumOperation.Subtraction:
                      materialOwner.Value -= supvalue;
                      break;
-                  case EnumOperation.Both:
+                  case EnumOperation.Both:                     
                      break;
                   case EnumOperation.Undefined:
                      break;
@@ -229,13 +237,19 @@ namespace AR_Materials.Model
             else
             {
                // Есть ли уже такой материал (может быть много добавок, но по идее они должны быть разных материалов, но фиг их знает)
-               Material supMaterial = _materials.Find(m => string.Equals(m.Name, supOwnerConstr.Material, StringComparison.CurrentCultureIgnoreCase));
+               Material supMaterial = _materials.Find(m => 
+                                       m.Construction == supOwnerConstr.Owner &&
+                                       string.Equals(m.Name, supOwnerConstr.Material, StringComparison.CurrentCultureIgnoreCase));
                if (supMaterial == null)
                {
                   supMaterial = new Material(supOwnerConstr.Material, materialOwner.Construction);
+                  _materials.Add(supMaterial);
                }
                supMaterial.Value += supvalue;
-               _materials.Add(supMaterial);
+               if (supOwnerConstr.Operation == EnumOperation.Both)
+               {
+                  materialOwner.Value -= supvalue;
+               }               
             }
          }
       }
@@ -301,7 +315,7 @@ namespace AR_Materials.Model
          {
             errMsg += "Наименование помещения не определено. ";
             hasError = true;
-         }
+         }         
          // Плинтус
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Baseboard);
          if (material == null)

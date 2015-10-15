@@ -17,25 +17,24 @@ namespace AR_Materials.Model
       /// <summary>
       /// расчетное значение величины. в мм.
       /// </summary>
-      public double Value { get { return _value; } set { _value = value; } }
-      public string PresentValue
-      {
-         get
-         {            
-            return getPresentValue();
+      public double Value { get { return _value; }
+         set
+         {
+            _value = value;
+            _presentvalue = getPresentValue();
          }
-      }      
+      }
+      public double PresentValue { get { return _presentvalue; } }
 
       public EnumConstructionType Construction { get { return _construction; } }
 
       public Material(string name, EnumConstructionType constrType)
       {
          _name = name;
-         _construction = constrType;
-         _value = 0;
+         _construction = constrType;         
       }
 
-      private string getPresentValue()
+      private double getPresentValue()
       {
          // _value - в мм.
          // вернуть в м, и округленно до 2 знаков.         
@@ -57,7 +56,7 @@ namespace AR_Materials.Model
             default:
                break;
          }
-         return Math.Round(_value * factor, 2).ToString();
+         return Math.Round(_value * factor, 2);
       }
    }
 }

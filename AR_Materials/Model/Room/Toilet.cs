@@ -37,11 +37,9 @@ namespace AR_Materials.Model
          // Площадь крышки короба унитаза
          res += _lenght * _width;
          // боковая стенка
-         var lowerLen = _lenght >= _width ? _width : _lenght;// размер меньшей из сторон короба
-         if (_contact == 1)         
-            res += lowerLen * _height;         
-         else if (_contact == 2)         
-            res += lowerLen * _height * 2;         
+         var lowerLen = _lenght >= _width ? _width : _lenght;// размер меньшей из сторон короба         
+         if (_contact == 1)
+            res += lowerLen * _height;
          return res;
       }
 

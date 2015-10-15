@@ -69,6 +69,7 @@
     <Compile Include="Lib\Blocks.cs" />
     <Compile Include="Lib\Counter.cs" />
     <Compile Include="ErrorInspection\Inspector.cs" />
+    <Compile Include="Lib\StringExt.cs" />
     <Compile Include="Lib\TableJig.cs" />
     <Compile Include="Lib\Zoom.cs" />
     <Compile Include="Model\Aperture\Aperture.cs" />

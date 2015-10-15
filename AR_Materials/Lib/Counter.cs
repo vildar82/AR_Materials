@@ -12,7 +12,7 @@ namespace AR_Materials
 
       static Counter()
       {
-         _counter = new Dictionary<string, int>();
+         Clear();
       }
 
       public static void Clear ()
@@ -26,13 +26,27 @@ namespace AR_Materials
          {
             _counter[key]++;
          }
+         else
+         {
+            _counter.Add(key, 1);
+         }
       }
 
-      public static int GetCount (string key)
+      //public static int GetCount (string key)
+      //{
+      //   int count;
+      //   _counter.TryGetValue(key, out count);
+      //   return count;
+      //}
+
+      public static string Report()
       {
-         int count;
-         _counter.TryGetValue(key, out count);
-         return count;
+         StringBuilder report = new StringBuilder("Обработано блоков:");
+         foreach (var counter in _counter)
+         {
+            report.AppendLine(string.Format("\n{0} - {1} блоков.", counter.Key, counter.Value));
+         }
+         return report.ToString(); 
       }
    }
 }

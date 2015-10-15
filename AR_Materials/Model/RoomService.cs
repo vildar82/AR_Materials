@@ -75,13 +75,13 @@ namespace AR_Materials.Model
                                              blRef);
                      }
                   }
-                  // Рабочая область
-                  else if (blName.Equals(Options.Instance.BlockWorkspaceName.ToUpper()))
-                  {
-                     Workspace ws = new Workspace(blRef);
-                     _ws.Add(ws);
-                     Counter.AddCount(Options.Instance.BlockWorkspaceName);
-                  }
+                  //// Рабочая область
+                  //else if (blName.Equals(Options.Instance.BlockWorkspaceName.ToUpper()))
+                  //{
+                  //   Workspace ws = new Workspace(blRef);
+                  //   _ws.Add(ws);
+                  //   Counter.AddCount(Options.Instance.BlockWorkspaceName);
+                  //}
                   // Добавка
                   else if (blName.Equals(Options.Instance.BlockSupplementName.ToUpper()))
                   {
@@ -98,6 +98,7 @@ namespace AR_Materials.Model
                   }
                }
             }
+            ed.WriteMessage("\n{0}", Counter.Report());
             t.Commit();
          }
       }      
@@ -120,10 +121,11 @@ namespace AR_Materials.Model
             // Список блоков проемов и объектов Aperture
             var listBlRefApertures = Apertures.Select(s => new { Aperture = s, BlRef = t.GetObject(s.IdBlRef, OpenMode.ForRead) as BlockReference });
             // Список полилиний и объектов Room            
-            var listPolyInRooms = Rooms.Select(r => new { Room = r, Polyline = r.GetPolyline() });  
-            foreach (var polyRoom in listPolyInRooms)
+            var listPolyInRooms = Rooms.Select(r => new { Room = r, Polyline = r.GetPolyline() });
+            foreach (var blRefAperture in listBlRefApertures)
             {
-               foreach (var blRefAperture in listBlRefApertures)
+               bool hasIntersect = false;
+               foreach (var polyRoom in listPolyInRooms)
                {
                   using (var pts = new Point3dCollection())
                   {
@@ -131,9 +133,14 @@ namespace AR_Materials.Model
                      if (pts.Count > 0)
                      {
                         polyRoom.Room.AddApertureIntersect(blRefAperture.Aperture);
+                        hasIntersect = true;
                      }
                   }
-               }               
+               }
+               if (!hasIntersect)
+               {
+                  // TODO: Добавить в список ошибок.                  
+               }
             }
             // Определение принадлежности помещения рабочей области
             findRoomsWorkspace();
@@ -141,6 +148,7 @@ namespace AR_Materials.Model
             // Если есть блоки добавок, то распределение их по помещениям.
             foreach (var sup in _sups)
             {
+               bool hasIntersect = false;
                foreach (var polyRoom in listPolyInRooms)
                {
                   if (IsInsidePolygon(polyRoom.Polyline, sup.Position) ||
@@ -149,10 +157,15 @@ namespace AR_Materials.Model
                      polyRoom.Room.AddSupplement(sup);
                   }                  
                }
+               if (!hasIntersect)
+               {
+                  // TODO: Добавить в список ошибок.
+               }
             }
             // Если есть блоки ящиков, то распределение их по помещениям.
             foreach (var toilet in _toilets)
             {
+               bool hasIntersect = false;
                foreach (var polyRoom in listPolyInRooms)
                {
                   if (IsInsidePolygon(polyRoom.Polyline, toilet.Position) ||
@@ -161,10 +174,14 @@ namespace AR_Materials.Model
                      polyRoom.Room.AddToilet(toilet);
                   }
                }
+               if (!hasIntersect)
+               {
+                  // TODO: Добавить в список ошибок.
+               }
             }
             t.Abort();
          }
-      }
+      }     
 
       // Определение принадлежности помещения рабочей области
       private void findRoomsWorkspace()

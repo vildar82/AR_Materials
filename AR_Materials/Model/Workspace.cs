@@ -38,12 +38,12 @@ namespace AR_Materials.Model
                // Секция
                if (tag.Equals(Options.Instance.WorkspaceBlAttrTagSection.ToUpper()))
                {
-                  _section = atr.TextString;
+                  _section = atr.TextString.ClearString();
                }
                // Этаж
                else if (tag.Equals(Options.Instance.WorkspaceBlAttrTagStorey.ToUpper()))
                {
-                  _storey = atr.TextString;
+                  _storey = atr.TextString.ClearString(); 
                }
             }
          }

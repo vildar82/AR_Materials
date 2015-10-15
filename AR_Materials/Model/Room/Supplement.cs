@@ -73,7 +73,7 @@ namespace AR_Materials.Model
                // Материал
                if (tag.Equals(Options.Instance.SupplementBlAttrTagMaterial.ToUpper()))
                {
-                  _material = atr.TextString;
+                  _material = atr.TextString.ClearString();
                }
                // Действие
                if (tag.Equals(Options.Instance.SupplementBlAttrTagOperation.ToUpper()))
@@ -148,7 +148,7 @@ namespace AR_Materials.Model
          {
             errMsg += "Материал не определен. ";
             hasErr = true;
-         }
+         }         
 
          if (hasErr)
          {

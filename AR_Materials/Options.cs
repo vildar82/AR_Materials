@@ -10,8 +10,8 @@ namespace AR_Materials
    {
       private static Options _options;
       // Блоки
-      private string _blRoomName = "АР_Помещение";
-      private string _blApertureName = "АР_Проём";
+      private string _blRoomName = "АРМ_Помещение";
+      private string _blApertureName = "АРМ_Проём";
       private string _blockWorkspaceName = "АР_Рабочая область";
       private string _blockSupplementName = "АРМ_Добавка";
       private string _blockToiletName = "АРМ_Унитаз";
@@ -22,6 +22,7 @@ namespace AR_Materials
       // Room - помещения
       private string _roomBlAttrTagOwner = "Принадлежность";
       private string _roomBlAttrTagName = "Наименование";
+      private string _roomBlAttrTagNumber = "НОМЕР_ПОМ";      
       private string _roomBlAttrTagHeight = "Высота";
       private string _roomBlAttrTagWall = "Стены";
       private string _roomBlAttrTagCeil = "Потолок";
@@ -54,6 +55,7 @@ namespace AR_Materials
       public string ApertureBlDynPropLenght { get { return _apertureBlDynPropLenght; } }
       public string ApertureBlAttrTagHeight { get { return _apertureBlAttrTagHeight; } }      
       public string RoomBlAttrTagName { get { return _roomBlAttrTagName; } }
+      public string RoomBlAttrTagNumber { get { return _roomBlAttrTagNumber; } }
       public string RoomBlAttrTagDeck { get { return _roomBlAttrTagDeck; } }
       public string RoomBlAttrTagCeil { get { return _roomBlAttrTagCeil; } }
       public string RoomBlAttrTagWall { get { return _roomBlAttrTagWall; } }
