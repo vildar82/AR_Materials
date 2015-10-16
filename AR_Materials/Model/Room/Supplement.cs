@@ -18,7 +18,9 @@ namespace AR_Materials.Model
       private EnumOperation _operation;
       private double _lenght;
       private double _width;
+      private ObjectId _idBlRef;
 
+      public ObjectId IdBlRef { get { return _idBlRef; } }
       public Point3d Position { get { return _position; } }
       public EnumConstructionType Owner { get { return _owner; } }
       public string Material { get { return _material; } }
@@ -28,6 +30,7 @@ namespace AR_Materials.Model
 
       public Supplement (BlockReference blRef)
       {
+         _idBlRef = blRef.Id; 
          _material = ""; // Поумолчанию = "" - материал берется с принадлежности добавки (стена, пол, потолок, плинтус, карниз).
          _position = blRef.Position;
          getAttrs(blRef);

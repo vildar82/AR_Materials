@@ -12,15 +12,18 @@ namespace AR_Materials.Model
    public class Toilet
    {
       private Point3d _position;
+      private ObjectId _idBlRef;
       private double _lenght;      
       private double _width;
       private int _height;
       private int _contact; // Примыкание стенок ящика унитаза к стенам помещения (1 - по длинной стороне, 2 - по длинной и короткой стороне).
 
       public Point3d Position { get { return _position; } }
+      public ObjectId IdBlRef { get { return _idBlRef; } }
 
       public Toilet(BlockReference blRef)
       {
+         _idBlRef = blRef.Id;
          _position = blRef.Position;
          getAttrs(blRef);
          getDynParams(blRef);

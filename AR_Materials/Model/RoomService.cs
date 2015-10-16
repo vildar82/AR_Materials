@@ -128,8 +128,9 @@ namespace AR_Materials.Model
                foreach (var polyRoom in listPolyInRooms)
                {
                   using (var pts = new Point3dCollection())
-                  {
-                     polyRoom.Polyline.IntersectWith(blRefAperture.BlRef, Intersect.ExtendBoth, pts, IntPtr.Zero, IntPtr.Zero);
+                  {                     
+                     polyRoom.Polyline.IntersectWith(blRefAperture.BlRef, Intersect.ExtendBoth, 
+                                                     polyRoom.Polyline.GetPlane(), pts, IntPtr.Zero, IntPtr.Zero);
                      if (pts.Count > 0)
                      {
                         polyRoom.Room.AddApertureIntersect(blRefAperture.Aperture);
@@ -138,8 +139,10 @@ namespace AR_Materials.Model
                   }
                }
                if (!hasIntersect)
-               {
-                  // TODO: Добавить в список ошибок.                  
+               {                  
+                  Inspector.AddError(string.Format(
+                     "{0} - не определены пересечения с помещениями. Рекомендуется заменить этот блок.", 
+                     Options.Instance.BlockApertureName), blRefAperture.BlRef);
                }
             }
             // Определение принадлежности помещения рабочей области
@@ -155,11 +158,14 @@ namespace AR_Materials.Model
                      IsPointOnPolyline(polyRoom.Polyline, sup.Position))
                   {
                      polyRoom.Room.AddSupplement(sup);
+                     hasIntersect = true;
                   }                  
                }
                if (!hasIntersect)
                {
-                  // TODO: Добавить в список ошибок.
+                  Inspector.AddError(string.Format(
+                     "{0} - не определено помещение для этой добавки. Рекомендуется заменить этот блок.",
+                     Options.Instance.BlockSupplementName), sup.IdBlRef);
                }
             }
             // Если есть блоки ящиков, то распределение их по помещениям.
@@ -172,11 +178,14 @@ namespace AR_Materials.Model
                      IsPointOnPolyline(polyRoom.Polyline, toilet.Position))
                   {
                      polyRoom.Room.AddToilet(toilet);
+                     hasIntersect = true;
                   }
                }
                if (!hasIntersect)
                {
-                  // TODO: Добавить в список ошибок.
+                  Inspector.AddError(string.Format(
+                     "{0} - не определено помещение для этого унитаза. Рекомендуется заменить этот блок.",
+                     Options.Instance.BlockSupplementName), toilet.IdBlRef);
                }
             }
             t.Abort();

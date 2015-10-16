@@ -27,6 +27,14 @@ namespace AR_Materials
          _errors = new List<Error>();
       }
 
+      public static void AddError(string message, ObjectId idEnt)
+      {
+         using (var ent = idEnt.Open(OpenMode.ForRead) as Entity)
+         {
+            AddError(message, ent);
+         }
+      }
+
       public static void AddError (string message, Entity ent)
       {
          _errors.Add(new Error(message, ent));

@@ -17,7 +17,7 @@ namespace System
       public static string ClearString(this string input)
       {
          //return Regex.Replace(input, @"\r\n?|\n", "");
-         return input.Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
+         return input.Trim().Replace("\r\n", "").Replace("\n", "").Replace("\r", "");
       }
    }
 }

@@ -64,6 +64,7 @@ namespace AR_Materials.Model
       private Table getTable()
       {
          Database db = HostApplicationServices.WorkingDatabase;
+         CellRange mCells;
          Table table = new Table();
          table.TableStyle = getTableStyle(db);
          // Размер таблицы         
@@ -97,9 +98,17 @@ namespace AR_Materials.Model
          int row = 2;
          // Заполнение помещений                           
          row = FillRoomsMaterial(table, row);
+
          // Заполнение итогов
          row++; // одна строка отступа.
-         row= FillTotalMaterials(table, row);
+         // Объединение строки между помещениями и итогом по матаериалам.
+         mCells = CellRange.Create(table, row, 0, row, Enum.GetValues(typeof (ColEnum)).Length-1);
+         table.MergeCells(mCells);
+         table.Rows[row].Height = 15;         
+         table.Cells[row, 0].TextString = "Итого материалов в этой квартире";
+         table.Cells[row, 0].Alignment = CellAlignment.MiddleCenter;
+         // заполнение итогов по материалам
+         row = FillTotalMaterials(table, row);
 
          table.GenerateLayout();
          return table;
@@ -108,6 +117,7 @@ namespace AR_Materials.Model
       // заполнение помещений
       private int FillRoomsMaterial(Table table, int row)
       {
+         CellRange mCells;
          int i = 0;
          // Группировка по секциям
          //var sectionsGroup = _rooms.GroupBy(r => r.Ws.Section);
@@ -118,7 +128,7 @@ namespace AR_Materials.Model
             //foreach (var apartment in apartmentsGroup)
             //{
                // сортировка помещений по номерам
-               var rooms = _rooms.OrderBy(r => r.Name).ThenBy(n => n.Number);
+         var rooms = _rooms.OrderBy(r => r.Owner).ThenBy(n => n.Number);
          foreach (var room in rooms)
          {
             // Секция
@@ -127,7 +137,8 @@ namespace AR_Materials.Model
             //table.Cells[row, (int)ColEnum.ApartamentType].TextString = apartment.Key;
             if (row == 2)
             {
-               table.Cells[0, 0].TextString = "Расход материалов " + room.Name;
+               table.Cells[0, 0].TextString = "Расход материалов в квартире " + room.Owner;
+               table.Rows[0].Height = 15;
             }
             // Наименование помещения
             table.Cells[row, (int)ColEnum.RoomName].TextString = room.Name;
@@ -137,45 +148,60 @@ namespace AR_Materials.Model
             i = 0;
             foreach (var item in ceilMaterials)
             {
-               table.Cells[row + i, (int)ColEnum.CeilMaterial].TextString = item.Name;
-               table.Cells[row + i, (int)ColEnum.CeilArea].TextString = item.PresentValue.ToString();
-               i++;
+               if (!string.IsNullOrWhiteSpace(item.Name))
+               {
+                  table.Cells[row + i, (int)ColEnum.CeilMaterial].TextString = item.Name;
+                  table.Cells[row + i, (int)ColEnum.CeilArea].TextString = item.PresentValue.ToString();
+                  i++;
+               }               
             }
             // Матенриалы Потолочного карниза (типы)                  
             var carniceMaterials = room.Materials.Where(m => m.Construction == EnumConstructionType.Carnice);
             i = 0;
             foreach (var item in carniceMaterials)
             {
-               table.Cells[row + i, (int)ColEnum.CarniceMaterial].TextString = item.Name;
-               table.Cells[row + i, (int)ColEnum.CarniceLenght].TextString = item.PresentValue.ToString();
-               i++;
+               if (!string.IsNullOrWhiteSpace(item.Name))
+               {
+                  table.Cells[row + i, (int)ColEnum.CarniceMaterial].TextString = item.Name;
+                  table.Cells[row + i, (int)ColEnum.CarniceLenght].TextString = item.PresentValue.ToString();
+                  i++;
+               }
             }
             // Стены                  
             var wallMaterials = room.Materials.Where(m => m.Construction == EnumConstructionType.Wall);
             i = 0;
             foreach (var item in wallMaterials)
             {
-               table.Cells[row + i, (int)ColEnum.WallMaterial].TextString = item.Name;
-               table.Cells[row + i, (int)ColEnum.WallArea].TextString = item.PresentValue.ToString();
-               i++;
+               if (!string.IsNullOrWhiteSpace(item.Name))
+               {
+                  table.Cells[row + i, (int)ColEnum.WallMaterial].TextString = item.Name;
+                  table.Cells[row + i, (int)ColEnum.WallArea].TextString = item.PresentValue.ToString();
+                  i++;
+               }
             }
             // Полы                  
             var deckMaterials = room.Materials.Where(m => m.Construction == EnumConstructionType.Deck);
             i = 0;
             foreach (var item in deckMaterials)
             {
-               table.Cells[row + i, (int)ColEnum.DeckMaterial].TextString = item.Name;
-               table.Cells[row + i, (int)ColEnum.DeckArea].TextString = item.PresentValue.ToString();
-               i++;
+               if (!string.IsNullOrWhiteSpace(item.Name))
+               {
+                  table.Cells[row + i, (int)ColEnum.DeckMaterial].TextString = item.Name;
+                  table.Cells[row + i, (int)ColEnum.DeckArea].TextString = item.PresentValue.ToString();
+                  i++;
+               }
             }
             // Плинтус                  
             var baseboardMaterials = room.Materials.Where(m => m.Construction == EnumConstructionType.Baseboard);
             i = 0;
             foreach (var item in baseboardMaterials)
             {
-               table.Cells[row + i, (int)ColEnum.BaseboardMaterial].TextString = item.Name;
-               table.Cells[row + i, (int)ColEnum.BaseboardLenght].TextString = item.PresentValue.ToString();
-               i++;
+               if (!string.IsNullOrWhiteSpace(item.Name))
+               {
+                  table.Cells[row + i, (int)ColEnum.BaseboardMaterial].TextString = item.Name;
+                  table.Cells[row + i, (int)ColEnum.BaseboardLenght].TextString = item.PresentValue.ToString();
+                  i++;
+               }
             }
             // Примечание                                    
             table.Cells[row, (int)ColEnum.Description].TextString = room.Description;
@@ -185,47 +211,55 @@ namespace AR_Materials.Model
             int topRow = row;
             row += groupCounts.Max();
             // Объединение столбцов номера и имени помещения
-            CellRange mCells = CellRange.Create(table, topRow, (int)ColEnum.RoomNumber, row, (int)ColEnum.RoomNumber);
-            table.MergeCells(mCells);
-            mCells = CellRange.Create(table, topRow, (int)ColEnum.RoomName, row, (int)ColEnum.RoomName);
-            table.MergeCells(mCells);
+            if ((row - topRow) > 1)
+            {
+               mCells = CellRange.Create(table, topRow, (int)ColEnum.RoomNumber, row - 1, (int)ColEnum.RoomNumber);
+               table.MergeCells(mCells);
+               mCells = CellRange.Create(table, topRow, (int)ColEnum.RoomName, row-1, (int)ColEnum.RoomName);
+               table.MergeCells(mCells);
+            }
          }
          //   }
          //}
          // Итого по помещениям         
-         table.Cells[row, (int)ColEnum.RoomName].TextString = "Итого";
+         mCells = CellRange.Create(table, row, (int)ColEnum.RoomNumber, row, (int)ColEnum.RoomName);
+         table.MergeCells(mCells);
+         table.Cells[row, (int)ColEnum.RoomNumber].TextString = "Итого";
          // всего площадь стен по всем помещениям.         
          var wallMater = _rooms.SelectMany(r => r.Materials).GroupBy(m => m.Construction);
          foreach (var item in wallMater)
          {            
             var value = item.Sum(m => m.PresentValue).ToString();
-            switch (item.Key)
+            if (!string.IsNullOrWhiteSpace(item.First().Name))
             {
-               case EnumConstructionType.Wall:
-                  table.Cells[row, (int)ColEnum.WallMaterial].TextString = "Стены, м2";
-                  table.Cells[row, (int)ColEnum.WallArea].TextString = value;
-                  break;
-               case EnumConstructionType.Deck:
-                  table.Cells[row, (int)ColEnum.DeckMaterial].TextString = "Пол, м2";
-                  table.Cells[row, (int)ColEnum.DeckArea].TextString = value;
-                  break;
-               case EnumConstructionType.Ceil:
-                  table.Cells[row, (int)ColEnum.CeilMaterial].TextString = "Потолок, м2";
-                  table.Cells[row, (int)ColEnum.CeilArea].TextString = value;
-                  break;
-               case EnumConstructionType.Baseboard:
-                  table.Cells[row, (int)ColEnum.BaseboardMaterial].TextString = "Плинтус, м.п.";
-                  table.Cells[row, (int)ColEnum.BaseboardLenght].TextString = value;
-                  break;
-               case EnumConstructionType.Carnice:
-                  table.Cells[row, (int)ColEnum.CarniceMaterial].TextString = "Карниз, м.п.";
-                  table.Cells[row, (int)ColEnum.CarniceLenght].TextString = value;
-                  break;
-               case EnumConstructionType.Undefined:
-                  break;
-               default:
-                  break;
-            }            
+               switch (item.Key)
+               {
+                  case EnumConstructionType.Wall:
+                     table.Cells[row, (int)ColEnum.WallMaterial].TextString = "Стены, м2";
+                     table.Cells[row, (int)ColEnum.WallArea].TextString = value;
+                     break;
+                  case EnumConstructionType.Deck:
+                     table.Cells[row, (int)ColEnum.DeckMaterial].TextString = "Пол, м2";
+                     table.Cells[row, (int)ColEnum.DeckArea].TextString = value;
+                     break;
+                  case EnumConstructionType.Ceil:
+                     table.Cells[row, (int)ColEnum.CeilMaterial].TextString = "Потолок, м2";
+                     table.Cells[row, (int)ColEnum.CeilArea].TextString = value;
+                     break;
+                  case EnumConstructionType.Baseboard:
+                     table.Cells[row, (int)ColEnum.BaseboardMaterial].TextString = "Плинтус, м.п.";
+                     table.Cells[row, (int)ColEnum.BaseboardLenght].TextString = value;
+                     break;
+                  case EnumConstructionType.Carnice:
+                     table.Cells[row, (int)ColEnum.CarniceMaterial].TextString = "Карниз, м.п.";
+                     table.Cells[row, (int)ColEnum.CarniceLenght].TextString = value;
+                     break;
+                  case EnumConstructionType.Undefined:
+                     break;
+                  default:
+                     break;
+               }
+            }
          }
          return row;
       }      
@@ -233,6 +267,7 @@ namespace AR_Materials.Model
       // заполнение итогов по всем материалам одной конструкции
       private int FillTotalMaterials(Table table, int row)
       {
+         CellRange mCells;
          // группировка всех материалов по типу коеструкции
          var maters = _rooms.SelectMany(r => r.Materials).GroupBy(m => m.Construction);
          foreach (var matersSomeConstr in maters)
@@ -243,7 +278,9 @@ namespace AR_Materials.Model
             foreach (var mater in materSomeName)
             {
                i++;
-               table.Cells[i, (int)ColEnum.RoomName].TextString = "Итого";
+               mCells = CellRange.Create(table, i, (int)ColEnum.RoomNumber, i, (int)ColEnum.RoomName);
+               table.MergeCells(mCells);
+               table.Cells[i, (int)ColEnum.RoomNumber].TextString = "Итого";
                // mater - должен быть всегда один материал.
                var value = mater.Sum(m => m.PresentValue).ToString();
                switch (matersSomeConstr.Key)
@@ -295,7 +332,7 @@ namespace AR_Materials.Model
          // итого по каждому материалу (кол материалов одной конмстр)
          var maxMatersSomeConstrAndName = _rooms.SelectMany(r => r.Materials).GroupBy(m => new { m.Construction, m.Name }).Max(m => m.Count());         
          resRowCount += maxMatersSomeConstrAndName;
-         return resRowCount+=2;
+         return ++resRowCount;
       }
 
       private ObjectId getTableStyle(Database db)

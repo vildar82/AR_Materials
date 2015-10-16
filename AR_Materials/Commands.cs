@@ -48,9 +48,7 @@ namespace AR_Materials
             ToTable toTable = new ToTable(roomService.Rooms);
             toTable.Insert();
 
-            // Експорт в ексель.
-
-            
+            // Експорт в ексель.            
          }
          catch (System.Exception ex)
          {

@@ -25,8 +25,7 @@ namespace AR_Materials.ErrorInspection
          _binding = new BindingSource();
          _binding.DataSource = Inspector.Errors;            
          listBoxError.DataSource = _binding;
-         listBoxError.DisplayMember = "Message";
-         //listBoxError.ValueMember = "Extents";
+         listBoxError.DisplayMember = "ShortMsg";         
          textBoxErr.DataBindings.Add("Text", _binding , "Message", false, DataSourceUpdateMode.OnPropertyChanged);                      
       }
 

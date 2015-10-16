@@ -54,7 +54,7 @@ namespace AR_Materials.Model
          _materials = new List<Material>();
          _apertures = new List<Aperture>();
          _sups = new List<Supplement>();
-         _toilets = new List<Toilet>();
+         _toilets = new List<Toilet>();         
          _floor = "";
          _name = "";
          _number = 0;      
@@ -95,32 +95,52 @@ namespace AR_Materials.Model
                // Стены
                else if (tag.Equals(Options.Instance.RoomBlAttrTagWall.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Wall);
-                  _materials.Add(material);
+                  string materName = atrRef.TextString.ClearString();
+                  if (!string.IsNullOrWhiteSpace(materName))
+                  {
+                     Material material = new Material(materName, EnumConstructionType.Wall);
+                     _materials.Add(material);
+                  }
                }
                // Потолок
                else if (tag.Equals(Options.Instance.RoomBlAttrTagCeil.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Ceil);
-                  _materials.Add(material);                  
+                  string materName = atrRef.TextString.ClearString();
+                  if (!string.IsNullOrWhiteSpace(materName))
+                  {
+                     Material material = new Material(materName, EnumConstructionType.Ceil);
+                     _materials.Add(material);
+                  }
                }
                // Пол
                else if (tag.Equals(Options.Instance.RoomBlAttrTagDeck.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Deck);
-                  _materials.Add(material);                  
+                  string materName = atrRef.TextString.ClearString();
+                  if (!string.IsNullOrWhiteSpace(materName))
+                  {
+                     Material material = new Material(materName, EnumConstructionType.Deck);
+                     _materials.Add(material);
+                  }
                }
                // Плинтус
                else if (tag.Equals(Options.Instance.RoomBlAttrTagBaseboard.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Baseboard);
-                  _materials.Add(material);
+                  string materName = atrRef.TextString.ClearString();
+                  if (!string.IsNullOrWhiteSpace(materName))
+                  {
+                     Material material = new Material(materName, EnumConstructionType.Baseboard);
+                     _materials.Add(material);
+                  }
                }
                // Карниз
                else if (tag.Equals(Options.Instance.RoomBlAttrTagCarnice.ToUpper()))
                {
-                  Material material = new Material(atrRef.TextString.ClearString(), EnumConstructionType.Carnice);
-                  _materials.Add(material);
+                  string materName = atrRef.TextString.ClearString();
+                  if (!string.IsNullOrWhiteSpace(materName))
+                  {
+                     Material material = new Material(materName, EnumConstructionType.Carnice);
+                     _materials.Add(material);
+                  }
                }
                // Примечание
                else if (tag.Equals(Options.Instance.RoomBlAttrTagDescription.ToUpper()))
@@ -144,21 +164,27 @@ namespace AR_Materials.Model
       private void calcCeil()
       {
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Ceil);
-         // Площадь полилинии помещения.
-         material.Value = _areaPoly;
+         if (material != null)
+         {
+            // Площадь полилинии помещения.
+            material.Value = _areaPoly;
+         }
       }
 
       private void calcAreaDeck()
       {
          // Площадь пола по полилинии помещения.
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Deck);
-         material.Value = _areaPoly;
-         // Из пложади пола (по полилинии помещения), вычесть добавку в блоке Supplement если она есть применимая к полу.
-         supAdds(material, (sup) => sup.Lenght * sup.Width);
-         // Короба у унитазов
-         foreach (var toilet in _toilets)
+         if (material != null)
          {
-            material.Value += toilet.AddToDeckArea();
+            material.Value = _areaPoly;
+            // Из пложади пола (по полилинии помещения), вычесть добавку в блоке Supplement если она есть применимая к полу.
+            supAdds(material, (sup) => sup.Lenght * sup.Width);
+            // Короба у унитазов
+            foreach (var toilet in _toilets)
+            {
+               material.Value += toilet.AddToDeckArea();
+            }
          }
       }
 
@@ -166,24 +192,30 @@ namespace AR_Materials.Model
       {
          // Материал карниза
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Carnice);
-         material.Value = _perimeter;
-         // Проемы на всю высоту помещения
-         double lenDoorWithHeightRoom = _apertures.Where(a => (a is DoorAperture) && a.Height >= Height).Sum(d => d.Lenght);
-         material.Value -= lenDoorWithHeightRoom;
+         if (material != null)
+         {
+            material.Value = _perimeter;
+            // Проемы на всю высоту помещения
+            double lenDoorWithHeightRoom = _apertures.Where(a => (a is DoorAperture) && a.Height >= Height).Sum(d => d.Lenght);
+            material.Value -= lenDoorWithHeightRoom;
+         }
       }
 
       private void calcBaseboard()
       {
          // Плинтус - длина м/п.                  
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Baseboard);
-         material.Value = _perimeter;
-         // Длина дверей - вичитается из длины плинтуса
-         double lenDoors = _apertures.Where(a => a is DoorAperture).Sum(d => d.Lenght);
-         material.Value -= lenDoors;
-         // Учат унитазлов
-         foreach (var toilet in _toilets)
+         if (material != null)
          {
-            material.Value += toilet.AddToBaseboardLen();
+            material.Value = _perimeter;
+            // Длина дверей - вичитается из длины плинтуса
+            double lenDoors = _apertures.Where(a => a is DoorAperture).Sum(d => d.Lenght);
+            material.Value -= lenDoors;
+            // Учат унитазлов
+            foreach (var toilet in _toilets)
+            {
+               material.Value += toilet.AddToBaseboardLen();
+            }
          }
       }            
 
@@ -191,18 +223,21 @@ namespace AR_Materials.Model
       {
          // Материал стены
          Material materialWall = _materials.Find(m => m.Construction == EnumConstructionType.Wall);
-         // Площадь стен общая
-         double allAreaWall = _perimeter * _height;
-         // Площадь проемов
-         double allAreaApertures = _apertures.Sum(a => a.Area);
-         // Площадь стен без проемов
-         materialWall.Value = allAreaWall - allAreaApertures;
-         // Добавки
-         supAdds(materialWall, (sup) => sup.Lenght* sup.Width);
-         // Унитазы
-         foreach (var toilet in _toilets)
+         if (materialWall != null)
          {
-            materialWall.Value += toilet.AddToWallArea();
+            // Площадь стен общая
+            double allAreaWall = _perimeter * _height;
+            // Площадь проемов
+            double allAreaApertures = _apertures.Sum(a => a.Area);
+            // Площадь стен без проемов
+            materialWall.Value = allAreaWall - allAreaApertures;
+            // Добавки
+            supAdds(materialWall, (sup) => sup.Lenght * sup.Width);
+            // Унитазы
+            foreach (var toilet in _toilets)
+            {
+               materialWall.Value += toilet.AddToWallArea();
+            }
          }
       }
 
@@ -287,6 +322,7 @@ namespace AR_Materials.Model
                   {                     
                      _perimeter = poly.Length;
                      _areaPoly = poly.Area;
+                     poly.Elevation = 0;
                      return poly;//.Clone() as Polyline;
                   }
                }
@@ -305,52 +341,52 @@ namespace AR_Materials.Model
          string errMsg = string.Format("Ошибки в блоке {0}: ", Options.Instance.BlockRoomName );
          bool hasError = false;
          // Принадлежность
-         if (string.IsNullOrEmpty(_owner))
-         {
-            errMsg += "Принадлежность помещения не определена. ";
-            hasError = true;
-         }
+         //if (string.IsNullOrEmpty(_owner))
+         //{
+         //   errMsg += "Принадлежность помещения не определена. ";
+         //   hasError = true;
+         //}
          // Наименование
          if (string.IsNullOrEmpty(_name))
          {
             errMsg += "Наименование помещения не определено. ";
             hasError = true;
          }         
-         // Плинтус
-         Material material = _materials.Find(m => m.Construction == EnumConstructionType.Baseboard);
-         if (material == null)
-         {
-            errMsg += "Матариал плинтуса не определен. ";
-            hasError = true;
-         }
-         // Карниз
-         material = _materials.Find(m => m.Construction == EnumConstructionType.Carnice);
-         if (material == null)
-         {
-            errMsg += "Матариал карниза не определен. ";
-            hasError = true;
-         }
-         // Потолка
-         material = _materials.Find(m => m.Construction == EnumConstructionType.Ceil);
-         if (material == null)
-         {
-            errMsg += "Матариал потолка не определен. ";
-            hasError = true;
-         }
-         // Пол
-         material = _materials.Find(m => m.Construction == EnumConstructionType.Deck);
-         if (material == null)
-         {
-            errMsg += "Матариал пола не определен. ";
-            hasError = true;
-         }
-         // Стены
-         material = _materials.Find(m => m.Construction == EnumConstructionType.Wall);
-         if (material == null)
-         {
-            errMsg += "Матариал стен не определен. ";
-            hasError = true;
-         }
+         //// Плинтус
+         //Material material = _materials.Find(m => m.Construction == EnumConstructionType.Baseboard);
+         //if (material == null)
+         //{
+         //   errMsg += "Матариал плинтуса не определен. ";
+         //   hasError = true;
+         //}
+         //// Карниз
+         //material = _materials.Find(m => m.Construction == EnumConstructionType.Carnice);
+         //if (material == null)
+         //{
+         //   errMsg += "Матариал карниза не определен. ";
+         //   hasError = true;
+         //}
+         //// Потолка
+         //material = _materials.Find(m => m.Construction == EnumConstructionType.Ceil);
+         //if (material == null)
+         //{
+         //   errMsg += "Матариал потолка не определен. ";
+         //   hasError = true;
+         //}
+         //// Пол
+         //material = _materials.Find(m => m.Construction == EnumConstructionType.Deck);
+         //if (material == null)
+         //{
+         //   errMsg += "Матариал пола не определен. ";
+         //   hasError = true;
+         //}
+         //// Стены
+         //material = _materials.Find(m => m.Construction == EnumConstructionType.Wall);
+         //if (material == null)
+         //{
+         //   errMsg += "Матариал стен не определен. ";
+         //   hasError = true;
+         //}
          // Высота
          if (_height <= 0)
          {
