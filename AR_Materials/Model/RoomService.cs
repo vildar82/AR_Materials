@@ -101,6 +101,10 @@ namespace AR_Materials.Model
             ed.WriteMessage("\n{0}", Counter.Report());
             t.Commit();
          }
+         if (_rooms.Count == 0)
+         {
+            Inspector.AddError("Не найдены блоки помещений. См. справку - команда ARM-Help");
+         }
       }      
 
       public void CalcMaterials()
@@ -266,9 +270,11 @@ namespace AR_Materials.Model
          return (dtheta);
       }
 
-      public static bool IsPointOnPolyline(Polyline pl, Point3d pt)
+      public static bool IsPointOnPolyline(Polyline pl, Point3d ptOrig)
       {
          bool isOn = false;
+         pl.Elevation = 0;
+         Point3d pt = new Point3d(ptOrig.X, ptOrig.Y, 0);
          for (int i = 0; i < pl.NumberOfVertices; i++)
          {
             Curve3d seg = null;
