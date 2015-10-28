@@ -75,13 +75,13 @@ namespace AR_Materials.Model
                                              blRef);
                      }
                   }
-                  //// Рабочая область
-                  //else if (blName.Equals(Options.Instance.BlockWorkspaceName.ToUpper()))
-                  //{
-                  //   Workspace ws = new Workspace(blRef);
-                  //   _ws.Add(ws);
-                  //   Counter.AddCount(Options.Instance.BlockWorkspaceName);
-                  //}
+                  // Рабочая область
+                  else if (blName.Equals(Options.Instance.BlockWorkspaceName.ToUpper()))
+                  {
+                     Workspace ws = new Workspace(blRef);
+                     _ws.Add(ws);
+                     Counter.AddCount(Options.Instance.BlockWorkspaceName);
+                  }
                   // Добавка
                   else if (blName.Equals(Options.Instance.BlockSupplementName.ToUpper()))
                   {
@@ -125,7 +125,7 @@ namespace AR_Materials.Model
             // Список блоков проемов и объектов Aperture
             var listBlRefApertures = Apertures.Select(s => new { Aperture = s, BlRef = t.GetObject(s.IdBlRef, OpenMode.ForRead) as BlockReference });
             // Список полилиний и объектов Room            
-            var listPolyInRooms = Rooms.Select(r => new { Room = r, Polyline = r.GetPolyline() });
+            var listPolyInRooms = Rooms.Select(r => new { Room = r, Polyline = r.GetPolyline() }).ToList();
             foreach (var blRefAperture in listBlRefApertures)
             {
                bool hasIntersect = false;

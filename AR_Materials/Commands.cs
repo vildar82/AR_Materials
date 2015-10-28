@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Text;
 using AR_Materials.Model;
+using AR_Materials.Model.Result;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
 

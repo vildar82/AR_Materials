@@ -161,6 +161,7 @@ namespace AR_Materials.Model
          calcCeil(); // Потолок
       }
 
+      // определение площади потолка
       private void calcCeil()
       {
          Material material = _materials.Find(m => m.Construction == EnumConstructionType.Ceil);
@@ -168,9 +169,12 @@ namespace AR_Materials.Model
          {
             // Площадь полилинии помещения.
             material.Value = _areaPoly;
+            // Из площади потолка (по полилинии помещения), вычесть добавку в блоке Supplement если она есть применимая к потолку.
+            supAdds(material, (sup) => sup.Lenght * sup.Width);
          }
       }
 
+      // определение площади пола
       private void calcAreaDeck()
       {
          // Площадь пола по полилинии помещения.
@@ -188,6 +192,7 @@ namespace AR_Materials.Model
          }
       }
 
+      // площадь карнирза
       private void calcCarnice()
       {
          // Материал карниза
@@ -198,6 +203,8 @@ namespace AR_Materials.Model
             // Проемы на всю высоту помещения
             double lenDoorWithHeightRoom = _apertures.Where(a => (a is DoorAperture) && a.Height >= Height).Sum(d => d.Lenght);
             material.Value -= lenDoorWithHeightRoom;
+            // добавки
+            supAdds(material, (sup) => sup.Lenght);
          }
       }
 
@@ -216,6 +223,8 @@ namespace AR_Materials.Model
             {
                material.Value += toilet.AddToBaseboardLen();
             }
+            // добавки
+            supAdds(material, (sup) => sup.Lenght);
          }
       }            
 

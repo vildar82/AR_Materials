@@ -77,6 +77,8 @@
     <Compile Include="Model\Aperture\DoorAperture.cs" />
     <Compile Include="Model\Aperture\WindowAperture.cs" />
     <Compile Include="Model\Material.cs" />
+    <Compile Include="Model\Result\SectionTable.cs" />
+    <Compile Include="Model\Result\RoomTable.cs" />
     <Compile Include="Model\Result\ToTable.cs" />
     <Compile Include="Model\Room\EnumConstructionType.cs" />
     <Compile Include="Model\Room\Supplement.cs" />
