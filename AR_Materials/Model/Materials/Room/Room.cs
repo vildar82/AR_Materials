@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AcadLib.Errors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 
@@ -404,7 +405,7 @@ namespace AR_Materials.Model
          }
          if (hasError)
          {
-            Inspector.AddError(errMsg, blRefRoom);
+            Inspector.AddError(errMsg, blRefRoom, System.Drawing.SystemIcons.Error);
          }
       }
    }

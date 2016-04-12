@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AcadLib.Errors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 
@@ -155,7 +156,7 @@ namespace AR_Materials.Model
 
          if (hasErr)
          {
-            Inspector.AddError(errMsg, blRef);
+            Inspector.AddError(errMsg, blRef, System.Drawing.SystemIcons.Error);
          }
       }
    }

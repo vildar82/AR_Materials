@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AcadLib">
+      <HintPath>..\..\..\AcadLib\AcadLib\bin\Release\AcadLib.dll</HintPath>
+    </Reference>
     <Reference Include="AcCoreMgd">
       <HintPath>..\..\..\ObjectARX\ObjectARX2013\inc\AcCoreMgd.dll</HintPath>
       <Private>False</Private>
@@ -59,40 +62,25 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
-    <Compile Include="ErrorInspection\Error.cs" />
-    <Compile Include="ErrorInspection\FormError.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ErrorInspection\FormError.Designer.cs">
-      <DependentUpon>FormError.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Lib\Blocks.cs" />
-    <Compile Include="Lib\Counter.cs" />
-    <Compile Include="ErrorInspection\Inspector.cs" />
-    <Compile Include="Lib\StringExt.cs" />
-    <Compile Include="Lib\TableJig.cs" />
-    <Compile Include="Lib\Zoom.cs" />
-    <Compile Include="Model\Aperture\Aperture.cs" />
-    <Compile Include="Model\Aperture\ApertureFactory.cs" />
-    <Compile Include="Model\Aperture\DoorAperture.cs" />
-    <Compile Include="Model\Aperture\WindowAperture.cs" />
-    <Compile Include="Model\Material.cs" />
-    <Compile Include="Model\Result\SectionTable.cs" />
-    <Compile Include="Model\Result\RoomTable.cs" />
-    <Compile Include="Model\Result\ToTable.cs" />
-    <Compile Include="Model\Room\EnumConstructionType.cs" />
-    <Compile Include="Model\Room\Supplement.cs" />
-    <Compile Include="Model\Room\Toilet.cs" />
-    <Compile Include="Model\Workspace.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="Model\Room\Room.cs" />
-    <Compile Include="Model\RoomService.cs" />
+    <Compile Include="Model\Materials\Aperture\Aperture.cs" />
+    <Compile Include="Model\Materials\Aperture\ApertureFactory.cs" />
+    <Compile Include="Model\Materials\Aperture\DoorAperture.cs" />
+    <Compile Include="Model\Materials\Aperture\WindowAperture.cs" />
+    <Compile Include="Model\Materials\Material.cs" />
+    <Compile Include="Model\Materials\Aperture\Result\SectionTable.cs" />
+    <Compile Include="Model\Materials\Aperture\Result\RoomTable.cs" />
+    <Compile Include="Model\Materials\Aperture\Result\ToTable.cs" />
+    <Compile Include="Model\Materials\Room\EnumConstructionType.cs" />
+    <Compile Include="Model\Materials\Room\Supplement.cs" />
+    <Compile Include="Model\Materials\Room\Toilet.cs" />
+    <Compile Include="Model\Materials\Workspace.cs" />
+    <Compile Include="Model\Materials\Options.cs" />
+    <Compile Include="Model\Materials\Room\Room.cs" />
+    <Compile Include="Model\Materials\RoomService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ErrorInspection\FormError.resx">
-      <DependentUpon>FormError.cs</DependentUpon>
-    </EmbeddedResource>
+    <Folder Include="Model\Interiors\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

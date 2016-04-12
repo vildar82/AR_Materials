@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AcadLib.Errors;
 using Autodesk.AutoCAD.DatabaseServices;
 
 namespace AR_Materials.Model
@@ -66,7 +67,7 @@ namespace AR_Materials.Model
          }
          if (haserr)
          {
-            Inspector.AddError(msg, blRef);
+            Inspector.AddError(msg, blRef, System.Drawing.SystemIcons.Error);
          }
       }
    }

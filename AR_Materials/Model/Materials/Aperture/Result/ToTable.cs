@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AcadLib.Jigs;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -39,15 +40,15 @@ namespace AR_Materials.Model.Result
             table = rt.GetTable();
          }
          
-         TableJig jigTable = new TableJig(table, 100);
+         TableJig jigTable = new TableJig(table, 1 / db.Cannoscale.Scale, "Вставка таблицы");
          if (ed.Drag(jigTable).Status == PromptStatus.OK)
          {
             using (var t = db.TransactionManager.StartTransaction())
             {
-               table.ScaleFactors = new Scale3d(100);
+               //table.ScaleFactors = new Scale3d(100);
                var cs = db.CurrentSpaceId.GetObject(OpenMode.ForWrite) as BlockTableRecord;
-               cs.AppendEntity(table);
-               table.Dispose();
+               cs.AppendEntity(table);               
+               t.AddNewlyCreatedDBObject(table, true);
                t.Commit();
             }
          }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AcadLib.Blocks;
+using AcadLib.Errors;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -51,7 +53,7 @@ namespace AR_Materials.Model
                if (idEnt.ObjectClass.Name == "AcDbBlockReference")
                {
                   var blRef = t.GetObject(idEnt, OpenMode.ForRead) as BlockReference;
-                  string blName = Blocks.GetEffectiveName(blRef).ToUpper();
+                  string blName = blRef.GetEffectiveName().ToUpper();
                   
                   // Помещение
                   if (blName.StartsWith (Options.Instance.BlockRoomName.ToUpper()))
@@ -72,7 +74,7 @@ namespace AR_Materials.Model
                      else
                      {
                         Inspector.AddError("Не определен тип проема. Блок проема должен быть на слое окна или двери. См. справку - MaterialsHelp.",
-                                             blRef);
+                                             blRef, System.Drawing.SystemIcons.Error);
                      }
                   }
                   // Рабочая область
@@ -103,7 +105,8 @@ namespace AR_Materials.Model
          }
          if (_rooms.Count == 0)
          {
-            Inspector.AddError("Не найдены блоки помещений. См. справку - команда ARM-Help");
+            Inspector.AddError("Не найдены блоки помещений. См. справку - команда ARM-Help", 
+                System.Drawing.SystemIcons.Warning);
          }
       }      
 
@@ -146,7 +149,7 @@ namespace AR_Materials.Model
                {                  
                   Inspector.AddError(string.Format(
                      "{0} - не определены пересечения с помещениями. Рекомендуется заменить этот блок.", 
-                     Options.Instance.BlockApertureName), blRefAperture.BlRef);
+                     Options.Instance.BlockApertureName), blRefAperture.BlRef, System.Drawing.SystemIcons.Error);
                }
             }
             // Определение принадлежности помещения рабочей области
@@ -169,7 +172,7 @@ namespace AR_Materials.Model
                {
                   Inspector.AddError(string.Format(
                      "{0} - не определено помещение для этой добавки. Рекомендуется заменить этот блок.",
-                     Options.Instance.BlockSupplementName), sup.IdBlRef);
+                     Options.Instance.BlockSupplementName), sup.IdBlRef, System.Drawing.SystemIcons.Error);
                }
             }
             // Если есть блоки ящиков, то распределение их по помещениям.
@@ -189,7 +192,7 @@ namespace AR_Materials.Model
                {
                   Inspector.AddError(string.Format(
                      "{0} - не определено помещение для этого унитаза. Рекомендуется заменить этот блок.",
-                     Options.Instance.BlockSupplementName), toilet.IdBlRef);
+                     Options.Instance.BlockSupplementName), toilet.IdBlRef, System.Drawing.SystemIcons.Error);
                }
             }
             t.Abort();
