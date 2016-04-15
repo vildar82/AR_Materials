@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using AcadLib.Errors;
 using Autodesk.AutoCAD.DatabaseServices;
 
-namespace AR_Materials.Model
+namespace AR_Materials.Model.Materials
 {
    public class Workspace : IEquatable<Workspace>
    {

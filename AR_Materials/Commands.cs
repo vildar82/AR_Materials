@@ -3,8 +3,6 @@ using System.Reflection;
 using System.Text;
 using AcadLib.Blocks;
 using AcadLib.Errors;
-using AR_Materials.Model;
-using AR_Materials.Model.Result;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
 
@@ -45,7 +43,7 @@ namespace AR_Materials
                 Counter.Clear();
 
                 // Поиск всех блоков помещений и проемов в чертеже.
-                RoomService roomService = new RoomService();
+                Model.Materials.RoomService roomService = new Model.Materials.RoomService();
                 roomService.FindAllBlocks();
                 if (Inspector.HasErrors)
                 {
@@ -70,7 +68,7 @@ namespace AR_Materials
                 }
 
                 // Построение таблицы.
-                ToTable toTable = new ToTable(roomService.Rooms);
+                Model.Materials.Result.ToTable toTable = new Model.Materials.Result.ToTable(roomService.Rooms);
                 toTable.Insert();
 
                 // Експорт в ексель.            
@@ -83,6 +81,29 @@ namespace AR_Materials
             }
         }
 
-
+        /// <summary>
+        /// Развертка стен выбранного блока с помещениями
+        /// </summary>
+        [CommandMethod("PIK", "ARI-RoomRollUp", CommandFlags.Modal | CommandFlags.NoPaperSpace | CommandFlags.NoBlockEditor)]
+        public void ARI_RoomsRollUp()
+        {
+            Logger.Log.Info("Start command ARI-RoomRollUp");
+            Document doc = Application.DocumentManager.MdiActiveDocument;
+            if (doc == null) return;            
+            try
+            {
+                Inspector.Clear();
+                Model.Interiors.RollUpService.CreateRollUp();
+                Inspector.Show();
+            }
+            catch (System.Exception ex)
+            {
+                doc.Editor.WriteMessage($"\nОшибка : {ex.Message}");
+                if (!ex.Message.Contains("Отменено пользователем"))
+                {
+                    Logger.Log.Error(ex, $"Command: ARI-RoomRollUp. {doc.Name}");
+                }
+            }
+        }
     }
 }

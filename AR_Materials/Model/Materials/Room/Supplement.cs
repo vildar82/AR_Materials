@@ -8,7 +8,7 @@ using AcadLib.Errors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 
-namespace AR_Materials.Model
+namespace AR_Materials.Model.Materials
 {
    // Добавка к площади или длине
    public class Supplement

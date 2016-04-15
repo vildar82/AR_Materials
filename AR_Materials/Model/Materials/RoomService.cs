@@ -10,7 +10,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 
-namespace AR_Materials.Model
+namespace AR_Materials.Model.Materials
 {
    // Помещения
    public class RoomService

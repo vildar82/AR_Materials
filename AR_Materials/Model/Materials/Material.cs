@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AR_Materials.Model
+namespace AR_Materials.Model.Materials
 {
    public class Material
    {

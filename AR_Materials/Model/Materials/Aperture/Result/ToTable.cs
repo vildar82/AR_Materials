@@ -9,7 +9,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
 
-namespace AR_Materials.Model.Result
+namespace AR_Materials.Model.Materials.Result
 {
    // Вывод результатов расчета материалов в таблицу
    public class ToTable

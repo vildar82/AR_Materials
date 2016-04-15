@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Autodesk.AutoCAD.DatabaseServices;
 
-namespace AR_Materials.Model
+namespace AR_Materials.Model.Materials
 {
    // Проем
    public abstract class Aperture
