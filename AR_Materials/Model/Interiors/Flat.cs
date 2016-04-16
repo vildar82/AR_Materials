@@ -58,6 +58,8 @@ namespace AR_Materials.Model.Interiors
             foreach (var room in Rooms)
             {
                 room.CalcRolls();
+                room.Length = room.Rolls.Sum(r => r.Length);
+                room.Height = room.Rolls.Max(r => r.Height);
             }
         }
 
@@ -157,50 +159,80 @@ namespace AR_Materials.Model.Interiors
         /// </summary>        
         public void CreateRoll(Point3d ptStart, BlockTableRecord btr)
         {
+            Options opt = Options.Instance;
             Transaction t = btr.Database.TransactionManager.TopTransaction;
-            Point2d ptCurRoll = ptStart.Convert2d();
-            var textHeight = 3.5 * (1 / btr.Database.Cannoscale.Scale);
+            Point2d ptRoom = ptStart.Convert2d();
+            var textHeight = 2.5 * (1 / btr.Database.Cannoscale.Scale);
             string textValue = string.Empty;
-            foreach (var room in Rooms)
+            foreach (var room in Rooms.OrderBy(r=>r.Number?.Num))
             {
-                double roomLength = 0;                
+                Point2d ptRoll = ptRoom;                
 
                 foreach (var roll in room.Rolls.OrderBy(r=>r.Num))
                 {
-                    Point2d ptCurSegment = ptCurRoll;
-                    roll.Height = roll.Segments.Max(s => s.Height);
+                    Point2d ptSegment = ptRoll;                    
 
                     foreach (var segment in roll.Segments)
                     {
-                        roll.Length += segment.Length;
-                        // Полилиня контура
-                        Polyline plRol = new Polyline(4);
-                        plRol.SetDatabaseDefaults();
-                        plRol.AddVertexAt(0, ptCurSegment, 0, 0, 0);
-                        plRol.AddVertexAt(1, new Point2d(ptCurSegment.X, ptCurSegment.Y + segment.Height), 0, 0, 0);
-                        plRol.AddVertexAt(2, new Point2d(ptCurSegment.X + segment.Length, ptCurSegment.Y + segment.Height), 0, 0, 0);
-                        plRol.AddVertexAt(3, new Point2d(ptCurSegment.X + segment.Length, ptCurSegment.Y), 0, 0, 0);
-                        plRol.Closed = true;
+                        // Полилиня сегмента
+                        addRectangle(btr, t, ptSegment, segment.Length, segment.Height);
 
-                        btr.AppendEntity(plRol);
-                        t.AddNewlyCreatedDBObject(plRol, true);
+                        // Размер
+                        Point3d ptDim1 = ptSegment.Convert3d();
+                        Point3d ptDim2 = new Point3d(ptDim1.X + segment.Length, ptDim1.Y, 0);
+                        Point3d ptDimLine = new Point3d(ptDim1.X + segment.Length * 0.5, ptDim1.Y - 500, 0);
+                        addDim(btr, t, ptDim1, ptDim2, ptDimLine);
 
-                        ptCurSegment = new Point2d(ptCurSegment.X + segment.Length, ptCurSegment.Y);
+                        // Для Тестов - индекс сегмента
+                        var ptSegCenter = new Point2d(ptSegment.X + segment.Length * 0.5, ptSegment.Y + segment.Height * 0.5);
+                        addText(btr, t, ptSegCenter, segment.Index.ToString(), textHeight);
+
+                        ptSegment = new Point2d(ptSegment.X + segment.Length, ptSegment.Y);
                     }
-                                        
-                    var ptText = new Point3d(ptCurRoll.X + roll.Length * 0.5, ptCurRoll.Y + roll.Height + textHeight, 0);
-                    textValue = "Вид - " + (roll.View == null ? "0" : roll.Num.ToString());
-                    addText(btr, t, ptCurRoll, textValue, textHeight);
 
-                    ptCurRoll = new Point2d(ptCurRoll.X + roll.Length + 1000, ptCurRoll.Y);
-                    roomLength += roll.Length;
+                    var ptText = new Point2d(ptRoll.X + roll.Length * 0.5, ptRoll.Y + roll.Height + textHeight);
+                    textValue = "Вид-" + (roll.View == null ? "0" : roll.Num.ToString());
+                    addText(btr, t, ptText, textValue, textHeight);
+
+                    ptRoll = new Point2d(ptRoll.X + roll.Length + opt.RollViewOffset, ptRoll.Y);                    
                 }
 
-                double roomHeight = room.Rolls.Max(r => r.Height);
-                var ptTextRoom = new Point3d(ptCurRoll.X + roomLength * 0.5, ptCurRoll.Y + roomHeight + textHeight, 0);
+                // Полилиня помещения                
+                var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);
+                var lenRoomRectangle = room.Length + room.Rolls.Count * opt.RollViewOffset;
+                addRectangle(btr, t, ptRoomRectangle, lenRoomRectangle+1000, room.Height+2500);
+                
+                var ptTextRoom = new Point2d(ptRoom.X + lenRoomRectangle * 0.5, ptRoom.Y + room.Height+1000 + textHeight);
                 textValue = "Помещение " + (room.Number == null ? "0" : room.Number.Num.ToString());
-                addText(btr, t, ptCurRoll, textValue, textHeight);
+                addText(btr, t, ptTextRoom, textValue, textHeight);
+
+                ptRoom = new Point2d(ptRoom.X+ lenRoomRectangle + 2000, ptRoom.Y);
             }
+        }
+
+        private static void addRectangle(BlockTableRecord btr, Transaction t, Point2d ptSegment, double length, double height)
+        {
+            Polyline plRol = new Polyline(4);
+            plRol.SetDatabaseDefaults();
+            plRol.AddVertexAt(0, ptSegment, 0, 0, 0);
+            plRol.AddVertexAt(1, new Point2d(ptSegment.X, ptSegment.Y + height), 0, 0, 0);
+            plRol.AddVertexAt(2, new Point2d(ptSegment.X + length, ptSegment.Y + height), 0, 0, 0);
+            plRol.AddVertexAt(3, new Point2d(ptSegment.X + length, ptSegment.Y), 0, 0, 0);
+            plRol.Closed = true;
+
+            btr.AppendEntity(plRol);
+            t.AddNewlyCreatedDBObject(plRol, true);            
+        }
+
+        private static RotatedDimension addDim(BlockTableRecord btr, Transaction t,
+                Point3d ptPrev, Point3d ptNext, Point3d ptDimLine, double rotation = 0)
+        {            
+
+            var dim = new RotatedDimension(rotation.ToRadians(), ptPrev, ptNext, ptDimLine, "", RollUpService.IdDimStylePik);            
+            dim.Dimscale = 100;
+            btr.AppendEntity(dim);
+            t.AddNewlyCreatedDBObject(dim, true);
+            return dim;
         }
 
         private static void addText(BlockTableRecord btr, Transaction t, Point2d pt, string value, double height)

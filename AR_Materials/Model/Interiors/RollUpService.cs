@@ -21,6 +21,7 @@ namespace AR_Materials.Model.Interiors
         public static Editor Ed { get; private set; }
         public static Database Db { get; private set; }
         public static ObjectId IdTextStylePik { get; set; }
+        public static ObjectId IdDimStylePik { get; set; }
 
         /// <summary>
         /// Создание развертки для одного блока с помещениями
@@ -37,6 +38,7 @@ namespace AR_Materials.Model.Interiors
                 var flat = selectFlat();
 
                 IdTextStylePik = Db.GetTextStylePIK();
+                IdDimStylePik = Db.GetDimStylePIK();
 
                 // Вычисление разверток
                 flat.CalcRolls();
@@ -45,17 +47,17 @@ namespace AR_Materials.Model.Interiors
                 //test(flat);
 
                 // Точка вставки разверток квартиры
-                Point3d ptStart = Ed.GetPointWCS("Точка вставки");                
+                Point3d ptStart = Ed.GetPointWCS("Точка вставки");
 
                 // Построение разверток
                 using (var cs = Db.CurrentSpaceId.GetObject(OpenMode.ForWrite) as BlockTableRecord)
-                {                    
+                {
                     flat.CreateRoll(ptStart, cs);
                 }
                 t.Commit();
             }
         }
-                
+
         private static Flat selectFlat()
         {
             var selOpt = new PromptEntityOptions("Выбор блока квартиры");
@@ -76,7 +78,7 @@ namespace AR_Materials.Model.Interiors
             }
             else
             {
-                throw new Exception($"Не определена квартира - {res.Error}");                
+                throw new Exception($"Не определена квартира - {res.Error}");
             }
         }
 
@@ -89,26 +91,51 @@ namespace AR_Materials.Model.Interiors
 
             foreach (var room in flat.Rooms)
             {
-                // Построение стрелок видов
-                foreach (var view in room.Views)
-                {
-                    Point3d pt1 = view.Position.TransformBy(flatBlRef.BlockTransform);
-                    Point3d pt2 = pt1.Add(view.Vector * 100);
-                    Line line = new Line(pt1, pt2);
-                    cs.AppendEntity(line);
-                    t.AddNewlyCreatedDBObject(line, true);
-                }
+                //// Построение стрелок видов
+                //foreach (var view in room.Views)
+                //{
+                //    Point3d pt1 = view.Position.TransformBy(flatBlRef.BlockTransform);
+                //    Point3d pt2 = pt1.Add(view.Vector * 100);
+                //    Line line = new Line(pt1, pt2);
+                //    cs.AppendEntity(line);
+                //    t.AddNewlyCreatedDBObject(line, true);
+                //}
 
-                // Построение стрелок стен
-                foreach (var roll in room.Rolls)
+                //// Построение стрелок стен
+                //foreach (var roll in room.Rolls)
+                //{
+                //    foreach (var seg in roll.Segments)
+                //    {
+                //        var pt1 = seg.Center.Convert3d().TransformBy(flatBlRef.BlockTransform);
+                //        var pt2 = (seg.Center + seg.Direction.GetPerpendicularVector() * 1000).Convert3d().TransformBy(flatBlRef.BlockTransform);
+                //        Line line = new Line(pt1, pt2);
+                //        cs.AppendEntity(line);
+                //        t.AddNewlyCreatedDBObject(line, true);
+                //    }
+                //}
+
+                // Подпись номеров точек в полилинии и их координат
+                using (var btrFlat = flatBlRef.BlockTableRecord.GetObject(OpenMode.ForWrite) as BlockTableRecord)
                 {
-                    foreach (var seg in roll.Segments)
+                    using (var pl = room.IdPolyline.GetObject(OpenMode.ForRead) as Polyline)
                     {
-                        var pt1 = seg.Center.Convert3d().TransformBy(flatBlRef.BlockTransform);
-                        var pt2 = (seg.Center + seg.Direction.GetPerpendicularVector() * 1000).Convert3d().TransformBy(flatBlRef.BlockTransform);
-                        Line line = new Line(pt1, pt2);
-                        cs.AppendEntity(line);
-                        t.AddNewlyCreatedDBObject(line, true);
+                        for (int i = 0; i < pl.NumberOfVertices; i++)
+                        {
+                            var segType = pl.GetSegmentType(i);
+                            if (segType == SegmentType.Line)
+                            {
+                                var segLine = pl.GetLineSegment2dAt(i);
+                                var ptText = segLine.MidPoint.Convert3d();
+                                DBText text = new DBText();
+                                text.SetDatabaseDefaults();
+                                text.Height = 300;
+                                text.TextString = i.ToString();
+                                text.Position = ptText;
+
+                                btrFlat.AppendEntity(text);
+                                t.AddNewlyCreatedDBObject(text, true);
+                            }
+                        }
                     }
                 }
             }

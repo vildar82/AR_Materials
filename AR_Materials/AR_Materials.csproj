@@ -92,6 +92,7 @@
     <Compile Include="Commands.cs" />
     <Compile Include="Model\Interiors\Flat.cs" />
     <Compile Include="Model\Interiors\Number.cs" />
+    <Compile Include="Model\Interiors\Options.cs" />
     <Compile Include="Model\Interiors\Roll.cs" />
     <Compile Include="Model\Interiors\RollSegment.cs" />
     <Compile Include="Model\Interiors\RollUpService.cs" />

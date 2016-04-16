@@ -16,16 +16,25 @@ namespace AR_Materials.Model.Interiors
     public class Room
     {    
         public ObjectId IdPolyline { get; private set; }
-        public List<View> Views { get; private set; }
+        public List<View> Views { get; private set; } = new List<View>();
         public Number Number { get;  set; }
-        public List<Roll> Rolls { get; set; }
+        public List<Roll> Rolls { get; private set; } = new List<Roll>();
         public Matrix3d TransToModel { get; set; }
+        /// <summary>
+        /// Полная длина разверток помещения
+        /// </summary>
+        public double Length { get; internal set; }
+        /// <summary>
+        /// Максимальная высота развертки
+        /// </summary>
+        public double Height { get; internal set; }
+
+        private HashSet<Roll> hRolls = new HashSet<Roll>();
 
         public Room(Polyline pl, BlockReference blRefFlat)
         {
             IdPolyline = pl.Id;
             TransToModel = blRefFlat.BlockTransform;
-            Views = new List<View>();            
         }
 
         /// <summary>
@@ -44,41 +53,50 @@ namespace AR_Materials.Model.Interiors
         }
 
         public void CalcRolls()
-        {
-            Rolls = new List<Roll>();            
+        {            
             // Вычисление разверток помещения
             using (var pl = IdPolyline.GetObject(OpenMode.ForRead, false, true) as Polyline)
             {
                 Roll roll = new Roll(this);
                 var segSomes = new List<RollSegment>();
                 Vector2d direction = Vector2d.XAxis;
+                RollSegment segFirst = null;
+                RollSegment segLast = null;
+                RollSegment seg = null;
                 for (int i = 0; i < pl.NumberOfVertices; i++)
                 {                    
                     var segType = pl.GetSegmentType(i);                    
                     if (segType == SegmentType.Line)
                     {
                         var segLine = pl.GetLineSegment2dAt(i);
-                        var segLen = segLine.Length;                        
+                        var segLen = segLine.Length;
                         // Создане сегмента и определение вида который в упор смотрит на этот сегмент
-                        var rollSeg = new RollSegment(this, segLine);
+                        seg = new RollSegment(this, segLine, i);
 
                         // Если этот сегмент не сонаправлен предыдущему                        
-                        if (segSomes.Count>0 && !rollSeg.IsPartition && !direction.IsCodirectionalTo(rollSeg.Direction, RollSegment.ToleranceView))
+                        if (checkNewRoll(segSomes, direction, seg))
                         {
-                            roll.Segments.AddRange(segSomes);
-                            Rolls.Add(roll);
+                            roll.AddSegments(segSomes);
+                            AddRoll(roll);
                             roll = new Roll(this);
                             segSomes = new List<RollSegment>();
                         }
-                        direction = rollSeg.Direction;
 
-                        if (rollSeg.View != null && !rollSeg.IsPartition)
-                        {                         
-                            // определен вид.  
-                            roll.Num = rollSeg.View.Number;
-                            roll.View = rollSeg.View;
+                        if (!seg.IsPartition)
+                        {
+                            direction = seg.Direction;
+                            if (segFirst == null)
+                                segFirst = seg;
+                            segLast = seg;
                         }
-                        segSomes.Add(rollSeg);
+
+                        if (seg.View != null && !seg.IsPartition)
+                        {
+                            // определен вид.  
+                            roll.Num = seg.View.Number;
+                            roll.View = seg.View;
+                        }
+                        segSomes.Add(seg);
                     }
                     else if (segType == SegmentType.Arc)
                     {
@@ -94,6 +112,50 @@ namespace AR_Materials.Model.Interiors
                             pl.GeometricExtents, TransToModel, System.Drawing.SystemIcons.Warning);
                     }
                 }
+                // Проверка последнего сегмента, если для него еще не определена развертка
+                if (seg.Roll == null)
+                {
+                    // Проверка что последний сегмент входит в первую развертку помещения
+                    Roll rollFirst = segFirst.Roll;
+                    if (seg.IsPartition)
+                    {
+                        //rolFirst.AddSegments(new List<RollSegment>() { seg });
+                        seg = segLast;
+                        direction = seg.Direction;
+                    }
+
+                    // Проверка - может это сегмент первой развертки в помещении
+                    var dirFirst = segFirst.Direction;
+                    if (checkNewRoll(segSomes, dirFirst, seg))
+                    {
+                        // Новая развертка
+                        roll.AddSegments(segSomes);
+                        AddRoll(roll);
+                    }
+                    else
+                    {
+                        // Добавляем в первую развертку
+                        segSomes.Reverse();
+                        rollFirst.AddSegments(segSomes);                        
+                    }                              
+                }
+            }            
+        }
+
+        private bool checkNewRoll(List<RollSegment> segSomes, Vector2d direction, RollSegment rollSeg)
+        {
+            if (segSomes.Count > 0 && !rollSeg.IsPartition && !direction.IsCodirectionalTo(rollSeg.Direction, RollSegment.ToleranceView))
+            {                   
+                return true;
+            }
+            return false;
+        }
+
+        private void AddRoll(Roll roll)
+        {
+            if (hRolls.Add(roll))
+            {
+                Rolls.Add(roll);                
             }            
         }
     }

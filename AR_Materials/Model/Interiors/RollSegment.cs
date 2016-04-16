@@ -16,6 +16,7 @@ namespace AR_Materials.Model.Interiors
     {
         public static Tolerance ToleranceView = new Tolerance(0.1, 200);
         public Room Room { get; set; }
+        public Roll Roll { get; set; }
         public double Length { get; set; }
         public double Height { get; set; }        
         public bool IsPartition { get; set; }        
@@ -25,11 +26,11 @@ namespace AR_Materials.Model.Interiors
         public Vector2d Direction { get; set; }
         public Point2d Center { get; set; }        
         public View View { get; set; }             
-        // Все виды которые смотрят на этот сегмент
-        private List<View> lookViews { get; set; }
+        public int Index { get; set; }
 
-        public RollSegment(Room room, LineSegment2d segLine)
+        public RollSegment(Room room, LineSegment2d segLine, int index)
         {
+            Index = index;
             Room = room;
             Length = segLine.Length;
             Height = 2800;
@@ -63,14 +64,15 @@ namespace AR_Materials.Model.Interiors
             }            
             if (viewsDefined.Count == 1)
             {
-                View = viewsDefined[0];
-                View.Segment = this;
+                View = viewsDefined[0];                
             }
             else if (viewsDefined.Count>1)
             {
                 // Подходит тот который ближе к стене
-                View = viewsDefined.OrderBy(v => v.DistToSegment).First();
+                View = viewsDefined.OrderBy(v => v.DistToSegment).First();                
             }
+            if (View != null)            
+                View.Segment = this;            
         }
 
         private bool IsOnFront(LineSegment2d segLine, View view)
@@ -78,7 +80,7 @@ namespace AR_Materials.Model.Interiors
             // Опустить перпендикуляр на сегмент            
             try
             {
-                var ptRes = segLine.GetNormalPoint(view.Position.Convert2d(), ToleranceView).Point;
+                var ptRes = segLine.GetNormalPoint(view.Position.Convert2d()).Point;
                 Point3d ptNormal = new Point3d(ptRes.X, ptRes.Y, 0);
                 view.DistToSegment = (view.Position.Convert2d() - ptRes).Length;
                 // Вектор из точки вида на точку перпендикуляра на сегменте
