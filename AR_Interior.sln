@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AR_Materials", "AR_Materials\AR_Materials.csproj", "{28A5F2BD-C222-4240-B2FD-6A6E0DD8A645}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AR_Interior", "AR_Interior\AR_Interior.csproj", "{28A5F2BD-C222-4240-B2FD-6A6E0DD8A645}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

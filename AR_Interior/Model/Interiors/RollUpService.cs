@@ -47,6 +47,9 @@ namespace AR_Materials.Model.Interiors
                 //test(flat);
 
                 // Точка вставки разверток квартиры
+                var totalLen = flat.Rooms.Sum(r => r.DrawLength) * flat.Rooms.Count;
+                var totalHeight = flat.Rooms.Max(r => r.Height);
+                promptStartPoint(totalLen, totalHeight);
                 Point3d ptStart = Ed.GetPointWCS("Точка вставки");
 
                 // Построение разверток
@@ -56,7 +59,7 @@ namespace AR_Materials.Model.Interiors
                 }
                 t.Commit();
             }
-        }
+        }       
 
         private static Flat selectFlat()
         {
@@ -139,6 +142,11 @@ namespace AR_Materials.Model.Interiors
                     }
                 }
             }
+        }
+
+        private static void promptStartPoint(double totalLen, double totalHeight)
+        {
+            
         }
     }
 }

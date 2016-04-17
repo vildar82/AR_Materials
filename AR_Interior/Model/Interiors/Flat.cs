@@ -60,6 +60,8 @@ namespace AR_Materials.Model.Interiors
                 room.CalcRolls();
                 room.Length = room.Rolls.Sum(r => r.Length);
                 room.Height = room.Rolls.Max(r => r.Height);
+                room.DrawLength = room.Length + room.Rolls.Count * Options.Instance.RollViewOffset;
+                room.DrawHeight = room.Height + 2500;
             }
         }
 
@@ -198,15 +200,14 @@ namespace AR_Materials.Model.Interiors
                 }
 
                 // Полилиня помещения                
-                var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);
-                var lenRoomRectangle = room.Length + room.Rolls.Count * opt.RollViewOffset;
-                addRectangle(btr, t, ptRoomRectangle, lenRoomRectangle+1000, room.Height+2500);
+                var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);                
+                addRectangle(btr, t, ptRoomRectangle, room.DrawLength + 1000, room.DrawHeight);
                 
-                var ptTextRoom = new Point2d(ptRoom.X + lenRoomRectangle * 0.5, ptRoom.Y + room.Height+1000 + textHeight);
+                var ptTextRoom = new Point2d(ptRoom.X + room.DrawLength * 0.5, ptRoom.Y + room.Height+1000 + textHeight);
                 textValue = "Помещение " + (room.Number == null ? "0" : room.Number.Num.ToString());
                 addText(btr, t, ptTextRoom, textValue, textHeight);
 
-                ptRoom = new Point2d(ptRoom.X+ lenRoomRectangle + 2000, ptRoom.Y);
+                ptRoom = new Point2d(ptRoom.X+ room.DrawLength + 2000, ptRoom.Y);
             }
         }
 

@@ -27,7 +27,9 @@ namespace AR_Materials.Model.Interiors
         /// <summary>
         /// Максимальная высота развертки
         /// </summary>
-        public double Height { get; internal set; }
+        public double Height { get; set; }
+        public double DrawLength { get; set; }
+        public double DrawHeight { get; set; }
 
         private HashSet<Roll> hRolls = new HashSet<Roll>();
 
