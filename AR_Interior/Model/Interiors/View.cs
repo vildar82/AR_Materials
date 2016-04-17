@@ -45,7 +45,7 @@ namespace AR_Materials.Model.Interiors
             Number = int.TryParse(atrView.Text, out num) ? num : 0;
         }
 
-        public static List<View> GetViews(BlockReference blRefView, string blName, BlockReference blRefFlat)
+        public static List<View> GetViews(BlockReference blRefView, string blName, Matrix3d transToModel)
         {
             // Из блока вида - вытажить все виды
             List<View> views = new List<View>();
@@ -56,7 +56,7 @@ namespace AR_Materials.Model.Interiors
             if(angleView.Failure)
             {
                 Inspector.AddError($"Ошибка в блоке вида - {angleView.Error}", 
-                    blRefView, blRefFlat.BlockTransform, System.Drawing.SystemIcons.Error);
+                    blRefView, transToModel, System.Drawing.SystemIcons.Error);
                 return views;
             }            
 
@@ -82,7 +82,7 @@ namespace AR_Materials.Model.Interiors
                         break;
                     default:
                         Inspector.AddError($"В блоке вида '{blName}' не определен вид по атрибуту '{atrView.Tag}'",
-                            blRefView, blRefFlat.BlockTransform, System.Drawing.SystemIcons.Error);
+                            blRefView, transToModel, System.Drawing.SystemIcons.Error);
                         break;
                 }
                 if (view != null)

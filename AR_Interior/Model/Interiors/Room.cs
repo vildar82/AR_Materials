@@ -15,6 +15,7 @@ namespace AR_Materials.Model.Interiors
     /// </summary>
     public class Room
     {    
+        public Flat Flat { get; set; }
         public ObjectId IdPolyline { get; private set; }
         public List<View> Views { get; private set; } = new List<View>();
         public Number Number { get;  set; }
@@ -30,13 +31,15 @@ namespace AR_Materials.Model.Interiors
         public double Height { get; set; }
         public double DrawLength { get; set; }
         public double DrawHeight { get; set; }
+        public bool HasRoll { get { return Rolls.Count>0; } }
 
         private HashSet<Roll> hRolls = new HashSet<Roll>();
 
-        public Room(Polyline pl, BlockReference blRefFlat)
+        public Room(Flat flat, Polyline pl)
         {
+            Flat = flat;
             IdPolyline = pl.Id;
-            TransToModel = blRefFlat.BlockTransform;
+            TransToModel = flat.TransToModel;
         }
 
         /// <summary>
@@ -59,6 +62,10 @@ namespace AR_Materials.Model.Interiors
             // Вычисление разверток помещения
             using (var pl = IdPolyline.GetObject(OpenMode.ForRead, false, true) as Polyline)
             {
+                if (pl.Area < 1000)
+                {
+                    return;
+                }
                 Roll roll = new Roll(this);
                 var segSomes = new List<RollSegment>();
                 Vector2d direction = Vector2d.XAxis;
@@ -115,7 +122,7 @@ namespace AR_Materials.Model.Interiors
                     }
                 }
                 // Проверка последнего сегмента, если для него еще не определена развертка
-                if (seg.Roll == null)
+                if (seg.Roll == null && segFirst != null)
                 {
                     // Проверка что последний сегмент входит в первую развертку помещения
                     Roll rollFirst = segFirst.Roll;

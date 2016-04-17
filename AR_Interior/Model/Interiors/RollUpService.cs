@@ -35,54 +35,82 @@ namespace AR_Materials.Model.Interiors
             using (var t = Db.TransactionManager.StartTransaction())
             {
                 // Выбор помещения
-                var flat = selectFlat();
+                var flats = defineFlats();
+                if (flats.Count ==0)                
+                    throw new Exception("Развертки не определены.");                
 
                 IdTextStylePik = Db.GetTextStylePIK();
-                IdDimStylePik = Db.GetDimStylePIK();
-
-                // Вычисление разверток
-                flat.CalcRolls();
+                IdDimStylePik = Db.GetDimStylePIK();                
 
                 //// Temp - построения для проверки
                 //test(flat);
 
                 // Точка вставки разверток квартиры
-                var totalLen = flat.Rooms.Sum(r => r.DrawLength) * flat.Rooms.Count;
-                var totalHeight = flat.Rooms.Max(r => r.Height);
-                promptStartPoint(totalLen, totalHeight);
-                Point3d ptStart = Ed.GetPointWCS("Точка вставки");
+                double totalLen=0;
+                double totalHeight =0;
+                flats.ForEach(f=>
+                {
+                    totalLen += f.Rooms.Sum(r => r.DrawLength) + f.Rooms.Count * 1000;
+                    f.DrawHeight = f.Rooms.Max(r => r.DrawHeight) + 1000;
+                    totalHeight += f.DrawHeight;
+                });               
+                
+                Point3d ptStart = promptStartPoint(totalLen, totalHeight);
+                //Point3d ptStart = Ed.GetPointWCS("Точка вставки");
 
                 // Построение разверток
                 using (var cs = Db.CurrentSpaceId.GetObject(OpenMode.ForWrite) as BlockTableRecord)
                 {
-                    flat.CreateRoll(ptStart, cs);
+                    foreach (var flat in flats)
+                    {
+                        flat.CreateRoll(ptStart, cs);
+                        ptStart = new Point3d(ptStart.X, ptStart.Y + flat.DrawHeight,0);
+                    }                     
                 }
                 t.Commit();
             }
         }       
 
-        private static Flat selectFlat()
+        private static List<Flat> defineFlats()
         {
-            var selOpt = new PromptEntityOptions("Выбор блока квартиры");
-            selOpt.SetRejectMessage("Нужно выбрать блок");
-            selOpt.AddAllowedClass(typeof(BlockReference), true);
-            selOpt.AllowNone = false;
-            selOpt.AllowObjectOnLockedLayer = true;
-            var selRes = Ed.GetEntity(selOpt);
+            List<Flat> flats = new List<Flat>();
+            var selOpt = new PromptSelectionOptions();//"Выбор блока квартиры"
+            selOpt.MessageForAdding = "\nВыбор помещений с видами или блоков квартир:";            
+            var selRes = Ed.GetSelection(selOpt);
             if (selRes.Status != PromptStatus.OK)
             {
                 throw new Exception(AcadLib.General.CanceledByUser);
             }
-            Flat flat = new Flat(selRes.ObjectId);
-            var res = flat.Define();
-            if (res.Success)
+
+            List<ObjectId> ids = new List<ObjectId>();
+            foreach (var item in selRes.Value.GetObjectIds())
             {
-                return flat;
+                if (item.ObjectClass.Name == "AcDbBlockReference")
+                {
+                    var blRefFlat = item.GetObject(OpenMode.ForRead, false, true) as BlockReference;
+                    var btrFlat = blRefFlat.BlockTableRecord.GetObject(OpenMode.ForRead) as BlockTableRecord;
+                    Flat flat = new Flat();
+                    flat.Name = btrFlat.Name;
+                    flat.Define(btrFlat, blRefFlat.BlockTransform);
+                    if (flat.HasRoll)
+                    {                        
+                        flats.Add(flat);
+                    }
+                }
+                ids.Add(item);
             }
-            else
+
+            if (ids.Count>0)
             {
-                throw new Exception($"Не определена квартира - {res.Error}");
+                Flat flatModel = new Flat();
+                flatModel.Name = "Model";
+                flatModel.Define(ids, Matrix3d.Identity);
+                if (flatModel.HasRoll)
+                {                    
+                    flats.Add(flatModel);
+                }
             }
+            return flats;            
         }
 
         private static void test(Flat flat)
@@ -90,7 +118,7 @@ namespace AR_Materials.Model.Interiors
             var cs = Db.CurrentSpaceId.GetObject(OpenMode.ForWrite) as BlockTableRecord;
             Transaction t = Db.TransactionManager.TopTransaction;
 
-            var flatBlRef = flat.IdBlRef.GetObject(OpenMode.ForRead) as BlockReference;
+            //var flatBlRef = flat.IdBlRef.GetObject(OpenMode.ForRead) as BlockReference;
 
             foreach (var room in flat.Rooms)
             {
@@ -117,36 +145,40 @@ namespace AR_Materials.Model.Interiors
                 //    }
                 //}
 
-                // Подпись номеров точек в полилинии и их координат
-                using (var btrFlat = flatBlRef.BlockTableRecord.GetObject(OpenMode.ForWrite) as BlockTableRecord)
-                {
-                    using (var pl = room.IdPolyline.GetObject(OpenMode.ForRead) as Polyline)
-                    {
-                        for (int i = 0; i < pl.NumberOfVertices; i++)
-                        {
-                            var segType = pl.GetSegmentType(i);
-                            if (segType == SegmentType.Line)
-                            {
-                                var segLine = pl.GetLineSegment2dAt(i);
-                                var ptText = segLine.MidPoint.Convert3d();
-                                DBText text = new DBText();
-                                text.SetDatabaseDefaults();
-                                text.Height = 300;
-                                text.TextString = i.ToString();
-                                text.Position = ptText;
+                //// Подпись номеров точек в полилинии и их координат
+                //using (var btrFlat = flatBlRef.BlockTableRecord.GetObject(OpenMode.ForWrite) as BlockTableRecord)
+                //{
+                //    using (var pl = room.IdPolyline.GetObject(OpenMode.ForRead) as Polyline)
+                //    {
+                //        for (int i = 0; i < pl.NumberOfVertices; i++)
+                //        {
+                //            var segType = pl.GetSegmentType(i);
+                //            if (segType == SegmentType.Line)
+                //            {
+                //                var segLine = pl.GetLineSegment2dAt(i);
+                //                var ptText = segLine.MidPoint.Convert3d();
+                //                DBText text = new DBText();
+                //                text.SetDatabaseDefaults();
+                //                text.Height = 300;
+                //                text.TextString = i.ToString();
+                //                text.Position = ptText;
 
-                                btrFlat.AppendEntity(text);
-                                t.AddNewlyCreatedDBObject(text, true);
-                            }
-                        }
-                    }
-                }
+                //                btrFlat.AppendEntity(text);
+                //                t.AddNewlyCreatedDBObject(text, true);
+                //            }
+                //        }
+                //    }
+                //}
             }
         }
 
-        private static void promptStartPoint(double totalLen, double totalHeight)
+        private static Point3d promptStartPoint(double len, double height)
         {
-            
+            AcadLib.Jigs.RectangleJig jigRect = new AcadLib.Jigs.RectangleJig(len, height);
+            var res = Ed.Drag(jigRect);
+            if (res.Status != PromptStatus.OK)
+                throw new Exception(AcadLib.General.CanceledByUser);
+            return jigRect.Position;
         }
     }
 }

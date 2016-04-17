@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,40 +15,29 @@ namespace AR_Materials.Model.Interiors
     /// Квартира или МОП - блок в котором расположены поллинии помещений и блоки номеров и видов
     /// </summary>
     public class Flat
-    {
-        public ObjectId IdBlRef { get; set; }
-        public ObjectId IdBtr { get; set; }
-        public string BlName { get; set; }
-        public List<Room> Rooms { get; set; }
+    {        
+        public string Name { get; set; }
+        public List<Room> Rooms { get; set; }    
+        public Matrix3d TransToModel { get; set; }
+        public double DrawHeight { get; internal set; }
+        public bool HasRoll { get; private set; }
 
-        public Flat(ObjectId objectId)
+        public Result Define(IEnumerable ids, Matrix3d transToModel)
         {
-            this.IdBlRef = objectId;            
-        }
-
-        public Result Define()
-        {
+            TransToModel = transToModel;
             Rooms = new List<Room>();
-
-            var blRefFlat = IdBlRef.GetObject(OpenMode.ForRead, false, true) as BlockReference;
-            if (blRefFlat == null)
-                return Result.Fail("Это не блок");
-
-            BlName = blRefFlat.GetEffectiveName();
-            IdBtr = blRefFlat.BlockTableRecord;
-
-            var btrFlat = IdBtr.GetObject(OpenMode.ForRead) as BlockTableRecord;
-
-            // Перебор объектов внктри блока                
+            
             List<View> views;
             List<Number> numbers;
-            IterateEnt(blRefFlat, btrFlat, out views, out numbers);
+            IterateEnt(ids, out views, out numbers);
 
             // Определение принадлежности видов помещениям
-            ViewsOwner(blRefFlat, views);
+            ViewsOwner(views);
 
             // Определение принадлежности номеров помещениям
-            NumbersOwner(blRefFlat, numbers);
+            NumbersOwner(numbers);
+
+            CalcRolls();
 
             return Result.Ok();
         }        
@@ -58,19 +48,23 @@ namespace AR_Materials.Model.Interiors
             foreach (var room in Rooms)
             {
                 room.CalcRolls();
-                room.Length = room.Rolls.Sum(r => r.Length);
-                room.Height = room.Rolls.Max(r => r.Height);
-                room.DrawLength = room.Length + room.Rolls.Count * Options.Instance.RollViewOffset;
-                room.DrawHeight = room.Height + 2500;
+                if (room.HasRoll)
+                {
+                    HasRoll = true;
+                    room.Length = room.Rolls.Sum(r => r.Length);
+                    room.Height = room.Rolls.Max(r => r.Height);
+                    room.DrawLength = room.Length + room.Rolls.Count * Options.Instance.RollViewOffset;
+                    room.DrawHeight = room.Height + 2500;
+                }
             }
         }
 
-        private void IterateEnt(BlockReference blRefFlat, BlockTableRecord btrFlat,
-                                out List<View> views,out List<Number> numbers)
+        private void IterateEnt(IEnumerable ids,out List<View> views,out List<Number> numbers)
         {
+            var opt = Options.Instance;
             views = new List<View>();
             numbers = new List<Number>();
-            foreach (var idEnt in btrFlat)
+            foreach (ObjectId idEnt in ids)
             {
                 var ent = idEnt.GetObject(OpenMode.ForRead, false, true);
 
@@ -80,35 +74,37 @@ namespace AR_Materials.Model.Interiors
                 if (entPl != null && entPl.Area > 0)
                 {
                     // Помещение
-                    Room room = new Room(entPl, blRefFlat);
+                    Room room = new Room(this,  entPl);
                     Rooms.Add(room);
                 }
                 else if (entBlRef != null)
                 {
                     string entBlName = entBlRef.GetEffectiveName();
-                    if (entBlName.StartsWith("вид"))
-                    {
-                        // Блок Вида
-                        var blViews = View.GetViews(entBlRef, entBlName, blRefFlat);
+
+                    // Блок Вида
+                    if (entBlName.StartsWith(opt.BlockNameViewStart))
+                    {                        
+                        var blViews = View.GetViews(entBlRef, entBlName, TransToModel);
                         views.AddRange(blViews);
                     }
-                    else if (entBlName.Equals("П_номер помещения", StringComparison.OrdinalIgnoreCase))
+                    // Блок номера помещения
+                    else if (entBlName.Equals(opt.BlockNameRoomNumber, StringComparison.OrdinalIgnoreCase))
                     {
-                        // Блок номера помещения
+                        
                         Number number = new Number(entBlRef, entBlName);
                         numbers.Add(number);
                     }
                     else
                     {
-                        // Неопределенный блок
-                        Inspector.AddError($"Неопределенный блок в квартире - {entBlName}",
-                        entBlRef, blRefFlat.BlockTransform, System.Drawing.SystemIcons.Warning);
+                        //// Неопределенный блок
+                        //Inspector.AddError($"Неопределенный блок в квартире - {entBlName}",
+                        //entBlRef, TransToModel, System.Drawing.SystemIcons.Warning);
                     }
                 }
             }
         }
 
-        private void ViewsOwner(BlockReference blRefFlat, List<View> views)
+        private void ViewsOwner(List<View> views)
         {
             var viewsPos = views.GroupBy(v => v.Position, AcadLib.Comparers.Point3dEqualityComparer.Comparer1);
             foreach (var viewPos in viewsPos)
@@ -128,12 +124,12 @@ namespace AR_Materials.Model.Interiors
                     // Не определена принадлежность видов к помещению
                     var view = viewPos.First();
                     Inspector.AddError($"Не определена принадлежность вида к помещению",
-                        view.IdBlRef, blRefFlat.BlockTransform, System.Drawing.SystemIcons.Error);
+                        view.IdBlRef, TransToModel, System.Drawing.SystemIcons.Error);
                 }
             }            
         }
 
-        private void NumbersOwner(BlockReference blRefFlat, List<Number> numbers)
+        private void NumbersOwner(List<Number> numbers)
         {            
             foreach (var number in numbers)
             {
@@ -151,7 +147,7 @@ namespace AR_Materials.Model.Interiors
                 {
                     // Не определена принадлежность номера к помещению                    
                     Inspector.AddError($"Не определена принадлежность номера к помещению",
-                        number.IdBlRef, blRefFlat.BlockTransform, System.Drawing.SystemIcons.Error);
+                        number.IdBlRef, TransToModel, System.Drawing.SystemIcons.Error);
                 }
             }
         }
@@ -185,9 +181,9 @@ namespace AR_Materials.Model.Interiors
                         Point3d ptDimLine = new Point3d(ptDim1.X + segment.Length * 0.5, ptDim1.Y - 500, 0);
                         addDim(btr, t, ptDim1, ptDim2, ptDimLine);
 
-                        // Для Тестов - индекс сегмента
-                        var ptSegCenter = new Point2d(ptSegment.X + segment.Length * 0.5, ptSegment.Y + segment.Height * 0.5);
-                        addText(btr, t, ptSegCenter, segment.Index.ToString(), textHeight);
+                        //// Для Тестов - индекс сегмента
+                        //var ptSegCenter = new Point2d(ptSegment.X + segment.Length * 0.5, ptSegment.Y + segment.Height * 0.5);
+                        //addText(btr, t, ptSegCenter, segment.Index.ToString(), textHeight);
 
                         ptSegment = new Point2d(ptSegment.X + segment.Length, ptSegment.Y);
                     }

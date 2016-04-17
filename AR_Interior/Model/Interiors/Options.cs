@@ -32,15 +32,24 @@ namespace AR_Materials.Model.Interiors
         //
         // Развертки стен
         //
-
-        /// <summary>
-        /// Имя файла лога в Excel
-        /// </summary>
+                
         [Category("Развертки")]
         [DisplayName("Расстояние между видами")]
         [Description("Расстояние между видами при построении разверток помещения")]
         [DefaultValue(1000)]
-        public double RollViewOffset { get; set; } = 1000;        
+        public double RollViewOffset { get; set; } = 1000;
+        
+        [Category("Блоки")]
+        [DisplayName("Имя блока вида")]
+        [Description("Имя блока вида начинается с 'АРИ_Вид'")]
+        [DefaultValue("АРИ_Вид")]
+        public string BlockNameViewStart { get; set; } = "АРИ_Вид";
+
+        [Category("Блоки")]
+        [DisplayName("Имя блока номера помещение")]
+        [Description("Имя блока номера помещение")]
+        [DefaultValue("АРИ_Номер_Помещения")]
+        public string BlockNameRoomNumber { get; set; } = "АРИ_Номер_Помещения";
 
         public static Options Load()
         {
