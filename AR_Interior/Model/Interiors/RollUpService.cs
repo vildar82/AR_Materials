@@ -51,7 +51,7 @@ namespace AR_Materials.Model.Interiors
                 flats.ForEach(f=>
                 {
                     totalLen += f.Rooms.Sum(r => r.DrawLength) + f.Rooms.Count * 1000;
-                    f.DrawHeight = f.Rooms.Max(r => r.DrawHeight) + 1000;
+                    f.DrawHeight = f.Rooms.Max(r => r.DrawHeight);
                     totalHeight += f.DrawHeight;
                 });               
                 
@@ -64,7 +64,7 @@ namespace AR_Materials.Model.Interiors
                     foreach (var flat in flats)
                     {
                         flat.CreateRoll(ptStart, cs);
-                        ptStart = new Point3d(ptStart.X, ptStart.Y + flat.DrawHeight,0);
+                        ptStart = new Point3d(ptStart.X, ptStart.Y + flat.DrawHeight+1000,0);
                     }                     
                 }
                 t.Commit();
@@ -74,8 +74,16 @@ namespace AR_Materials.Model.Interiors
         private static List<Flat> defineFlats()
         {
             List<Flat> flats = new List<Flat>();
-            var selOpt = new PromptSelectionOptions();//"Выбор блока квартиры"
-            selOpt.MessageForAdding = "\nВыбор помещений с видами или блоков квартир:";            
+            var selOpt = new PromptSelectionOptions();//"Выбор блока квартиры"                       
+            selOpt.Keywords.Add("Options");            
+            var keys = selOpt.Keywords.GetDisplayString(true);
+            selOpt.MessageForAdding = "\nВыбор помещений с видами или блоков квартир: " + keys;
+            selOpt.MessageForRemoval = "\nИсключить: " + keys;
+            selOpt.KeywordInput += (s, e) =>
+            {
+                Options.Show();
+            };
+                      
             var selRes = Ed.GetSelection(selOpt);
             if (selRes.Status != PromptStatus.OK)
             {

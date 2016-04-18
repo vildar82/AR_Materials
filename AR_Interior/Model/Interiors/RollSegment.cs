@@ -13,8 +13,7 @@ namespace AR_Materials.Model.Interiors
     /// Сегиент развертки
     /// </summary>
     public class RollSegment : IComparable<RollSegment>
-    {
-        public static Tolerance ToleranceView = new Tolerance(0.1, 200);
+    {        
         public Room Room { get; set; }
         public Roll Roll { get; set; }
         public double Length { get; set; }
@@ -55,7 +54,7 @@ namespace AR_Materials.Model.Interiors
             foreach (var view in Room.Views.Where(v=>v.Segment == null))
             {
                 // Проверка перпендикулирности стрелки вида сегменту
-                if (!Direction.IsPerpendicularTo(new Vector2d (view.Vector.X, view.Vector.Y), RollUpService.Tolerance))                
+                if (!Direction.IsPerpendicularTo(new Vector2d (view.Direction.X, view.Direction.Y), RollUpService.Tolerance))                
                     continue;
                 // Проверка попадает ли вид в створ сегмента
                 if (!IsOnFront(segLine, view))
@@ -81,13 +80,13 @@ namespace AR_Materials.Model.Interiors
             try
             {
                 var ptRes = segLine.GetNormalPoint(view.Position.Convert2d()).Point;
-                Point3d ptNormal = new Point3d(ptRes.X, ptRes.Y, 0);
+                Point2d ptNormal = new Point2d(ptRes.X, ptRes.Y);
                 view.DistToSegment = (view.Position.Convert2d() - ptRes).Length;
                 // Вектор из точки вида на точку перпендикуляра на сегменте
-                var vecViewToNormal = ptNormal - view.Position;                
+                var vecViewToNormal = ptNormal - view.Position.Convert2d();                
                 //var angleVecNormal = vecViewToNormal.AngleOnPlane(new Plane());
                 //var angleView = view.Vector.AngleOnPlane(new Plane());
-                return view.Vector.IsCodirectionalTo(vecViewToNormal, ToleranceView);
+                return view.Direction.IsCodirectionalTo(vecViewToNormal, RollUpService.Tolerance);
             }
             catch
             {

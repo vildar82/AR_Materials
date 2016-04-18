@@ -21,7 +21,8 @@ namespace AR_Materials.Model.Interiors
         public ObjectId IdBlRef { get; set; }
         public Point3d Position { get; set; }
         public string BlName { get; set; }
-        public Vector3d Vector { get; set; }
+        public Vector2d Direction { get; set; }
+        public Vector3d Direction3d { get; set; }
         public AttributeInfo AtrInfo { get; set; }
         public int Number { get; set; }
         /// <summary>
@@ -39,7 +40,8 @@ namespace AR_Materials.Model.Interiors
             this.BlName = BlName;
             this.Position = blRef.Position;
             // Вектор направления вида
-            Vector = Vector3d.XAxis.RotateBy(angleView, Vector3d.ZAxis);
+            Direction = Vector2d.XAxis.RotateBy(angleView);
+            Direction3d = new Vector3d(Direction.X, Direction.Y, 0); //Vector3d.XAxis.RotateBy(angleView, Vector3d.ZAxis);
             AtrInfo = atrView;
             int num;
             Number = int.TryParse(atrView.Text, out num) ? num : 0;

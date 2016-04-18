@@ -84,8 +84,8 @@ namespace AR_Materials
         /// <summary>
         /// Развертка стен выбранного блока с помещениями
         /// </summary>
-        [CommandMethod("PIK", "ARI-RoomRollUp", CommandFlags.Modal | CommandFlags.NoPaperSpace | CommandFlags.NoBlockEditor)]
-        public void ARI_RoomsRollUp()
+        [CommandMethod("PIK", "ARI-RollUp", CommandFlags.Modal | CommandFlags.NoPaperSpace | CommandFlags.NoBlockEditor)]
+        public void ARI_RollUp()
         {
             Logger.Log.Info("Start command ARI-RoomRollUp");
             Document doc = Application.DocumentManager.MdiActiveDocument;

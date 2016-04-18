@@ -62,7 +62,7 @@ namespace AR_Materials.Model.Interiors
             // Вычисление разверток помещения
             using (var pl = IdPolyline.GetObject(OpenMode.ForRead, false, true) as Polyline)
             {
-                if (pl.Area < 1000)
+                if (pl.Area < 500)
                 {
                     return;
                 }
@@ -85,7 +85,7 @@ namespace AR_Materials.Model.Interiors
                         // Если этот сегмент не сонаправлен предыдущему                        
                         if (checkNewRoll(segSomes, direction, seg))
                         {
-                            roll.AddSegments(segSomes);
+                            roll.AddSegments(segSomes);                            
                             AddRoll(roll);
                             roll = new Roll(this);
                             segSomes = new List<RollSegment>();
@@ -117,8 +117,8 @@ namespace AR_Materials.Model.Interiors
                     }
                     else
                     {
-                        Inspector.AddError($"Cегмент полилинии помещения типа {segType}. Пока не обрабатываеься.",
-                            pl.GeometricExtents, TransToModel, System.Drawing.SystemIcons.Warning);
+                        //Inspector.AddError($"Cегмент полилинии помещения типа {segType}. Пока не обрабатываеься.",
+                        //    pl.GeometricExtents, TransToModel, System.Drawing.SystemIcons.Warning);
                     }
                 }
                 // Проверка последнего сегмента, если для него еще не определена развертка
@@ -153,7 +153,7 @@ namespace AR_Materials.Model.Interiors
 
         private bool checkNewRoll(List<RollSegment> segSomes, Vector2d direction, RollSegment rollSeg)
         {
-            if (segSomes.Count > 0 && !rollSeg.IsPartition && !direction.IsCodirectionalTo(rollSeg.Direction, RollSegment.ToleranceView))
+            if (segSomes.Count > 0 && !rollSeg.IsPartition && !direction.IsCodirectionalTo(rollSeg.Direction, RollUpService.Tolerance))
             {                   
                 return true;
             }
@@ -164,7 +164,9 @@ namespace AR_Materials.Model.Interiors
         {
             if (hRolls.Add(roll))
             {
-                Rolls.Add(roll);                
+                Rolls.Add(roll);
+                // Проверки развертки
+                roll.Check();
             }            
         }
     }

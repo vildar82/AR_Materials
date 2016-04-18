@@ -157,12 +157,23 @@ namespace AR_Materials.Model.Interiors
         /// </summary>        
         public void CreateRoll(Point3d ptStart, BlockTableRecord btr)
         {
+            var rooms = Rooms.Where(r => r.HasRoll).OrderBy(r => r.Number?.Num);
+            if (!rooms.Any())
+            {
+                return;
+            }
+
             Options opt = Options.Instance;
             Transaction t = btr.Database.TransactionManager.TopTransaction;
             Point2d ptRoom = ptStart.Convert2d();
             var textHeight = 2.5 * (1 / btr.Database.Cannoscale.Scale);
             string textValue = string.Empty;
-            foreach (var room in Rooms.OrderBy(r=>r.Number?.Num))
+
+            // Подпись квартиры
+            var ptTextFlat = new Point3d(ptStart.X, ptStart.Y+DrawHeight-500, 0);
+            addText(btr, t, ptTextFlat, Name, textHeight, TextHorizontalMode.TextLeft);
+
+            foreach (var room in rooms)
             {
                 Point2d ptRoll = ptRoom;                
 
@@ -188,7 +199,7 @@ namespace AR_Materials.Model.Interiors
                         ptSegment = new Point2d(ptSegment.X + segment.Length, ptSegment.Y);
                     }
 
-                    var ptText = new Point2d(ptRoll.X + roll.Length * 0.5, ptRoll.Y + roll.Height + textHeight);
+                    var ptText = new Point3d(ptRoll.X + roll.Length * 0.5, ptRoll.Y + roll.Height + textHeight,0);
                     textValue = "Вид-" + (roll.View == null ? "0" : roll.Num.ToString());
                     addText(btr, t, ptText, textValue, textHeight);
 
@@ -199,7 +210,7 @@ namespace AR_Materials.Model.Interiors
                 var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);                
                 addRectangle(btr, t, ptRoomRectangle, room.DrawLength + 1000, room.DrawHeight);
                 
-                var ptTextRoom = new Point2d(ptRoom.X + room.DrawLength * 0.5, ptRoom.Y + room.Height+1000 + textHeight);
+                var ptTextRoom = new Point3d(ptRoom.X + room.DrawLength * 0.5, ptRoom.Y + room.Height+1000 + textHeight, 0);
                 textValue = "Помещение " + (room.Number == null ? "0" : room.Number.Num.ToString());
                 addText(btr, t, ptTextRoom, textValue, textHeight);
 
@@ -232,20 +243,30 @@ namespace AR_Materials.Model.Interiors
             return dim;
         }
 
-        private static void addText(BlockTableRecord btr, Transaction t, Point2d pt, string value, double height)
+        private static void addText(BlockTableRecord btr, Transaction t, Point3d pt, string value, double height,
+            TextHorizontalMode horMode = TextHorizontalMode.TextCenter)
         {
             // Подпись развертки - номер вида
-            DBText text = new DBText();
-            text.SetDatabaseDefaults();
-            text.Height = height;
-            text.TextStyleId = RollUpService.IdTextStylePik;
-            text.TextString = value;
-            text.HorizontalMode = TextHorizontalMode.TextCenter;
-            text.AlignmentPoint = pt.Convert3d();
-            text.AdjustAlignment(btr.Database);
+            using (DBText text = new DBText())
+            {
+                text.SetDatabaseDefaults();
+                text.Height = height;
+                text.TextStyleId = RollUpService.IdTextStylePik;
+                text.TextString = value;
+                if (horMode == TextHorizontalMode.TextLeft)
+                {
+                    text.Position = pt;
+                }
+                else
+                {
+                    text.HorizontalMode = horMode;
+                    text.AlignmentPoint = pt;
+                    text.AdjustAlignment(btr.Database);
+                }                
 
-            btr.AppendEntity(text);
-            t.AddNewlyCreatedDBObject(text, true);            
+                btr.AppendEntity(text);
+                t.AddNewlyCreatedDBObject(text, true);
+            }
         }
     }
 }
