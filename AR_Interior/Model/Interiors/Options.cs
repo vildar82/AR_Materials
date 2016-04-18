@@ -57,6 +57,12 @@ namespace AR_Materials.Model.Interiors
         [DefaultValue("АИ_Номер_Помещения")]
         public string BlockNameRoomNumber { get; set; } = "АИ_Номер_Помещения";
 
+        [Category("Блоки")]
+        [DisplayName("Атрибут номера помещения")]
+        [Description("Атрибут номера помещения в блоке номера помещения")]
+        [DefaultValue("Номер")]
+        public string AttrRoomNumber { get; set; } = "Номер";
+
         public static Options Load()
         {
             Options options = null;

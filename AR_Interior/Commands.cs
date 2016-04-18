@@ -84,10 +84,10 @@ namespace AR_Materials
         /// <summary>
         /// Развертка стен выбранного блока с помещениями
         /// </summary>
-        [CommandMethod("PIK", "ARI-RollUp", CommandFlags.Modal | CommandFlags.NoPaperSpace | CommandFlags.NoBlockEditor)]
+        [CommandMethod("PIK", "AI-RollUp", CommandFlags.Modal | CommandFlags.NoPaperSpace | CommandFlags.NoBlockEditor)]
         public void ARI_RollUp()
         {
-            Logger.Log.Info("Start command ARI-RoomRollUp");
+            Logger.Log.Info("Start command AI-RollUp");
             Document doc = Application.DocumentManager.MdiActiveDocument;
             if (doc == null) return;            
             try
@@ -101,7 +101,7 @@ namespace AR_Materials
                 doc.Editor.WriteMessage($"\nОшибка : {ex.Message}");
                 if (!ex.Message.Contains("Отменено пользователем"))
                 {
-                    Logger.Log.Error(ex, $"Command: ARI-RoomRollUp. {doc.Name}");
+                    Logger.Log.Error(ex, $"Command: AI-RollUp. {doc.Name}");
                 }
             }
         }

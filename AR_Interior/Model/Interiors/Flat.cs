@@ -157,7 +157,7 @@ namespace AR_Materials.Model.Interiors
         /// </summary>        
         public void CreateRoll(Point3d ptStart, BlockTableRecord btr)
         {
-            var rooms = Rooms.Where(r => r.HasRoll).OrderBy(r => r.Number.Num);
+            var rooms = Rooms.Where(r => r.HasRoll).OrderBy(r => r.Number?.Num);
             if (!rooms.Any())
             {
                 return;

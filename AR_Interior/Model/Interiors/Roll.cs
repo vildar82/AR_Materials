@@ -86,7 +86,7 @@ namespace AR_Materials.Model.Interiors
             {
                 Extents = getExtents();
                 // Ошибка - вид неопределен
-                Inspector.AddError($"Неопределен номер вида для развертки.",
+                Inspector.AddError($"Не определен номер вида для развертки.",
                     Extents, Room.IdPolyline,  System.Drawing.SystemIcons.Warning);
             }
         }

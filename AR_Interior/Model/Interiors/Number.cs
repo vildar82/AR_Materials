@@ -26,7 +26,7 @@ namespace AR_Materials.Model.Interiors
             BlName = BlName;
             Position = blRef.Position;
             var attrs = AttributeInfo.GetAttrRefs(blRef);
-            AtrNum = attrs.Find(a => a.Tag.Equals("NUM", StringComparison.OrdinalIgnoreCase));
+            AtrNum = attrs.Find(a => a.Tag.Equals(Options.Instance.AttrRoomNumber, StringComparison.OrdinalIgnoreCase));
             if (AtrNum != null)
             {
                 int num;
