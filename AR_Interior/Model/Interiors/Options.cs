@@ -38,18 +38,24 @@ namespace AR_Materials.Model.Interiors
         [Description("Расстояние между видами при построении разверток помещения")]
         [DefaultValue(1000)]
         public double RollViewOffset { get; set; } = 1000;
-        
+
+        [Category("Развертки")]
+        [DisplayName("Минимальная длина сегмента")]
+        [Description("Сегменты меньше заданной длины будут включаться в обшую развертку соседних сегментов.")]
+        [DefaultValue(300)]
+        public double RollSegmentPartitionLength { get; set; } = 300;
+
         [Category("Блоки")]
         [DisplayName("Имя блока вида")]
-        [Description("Имя блока вида начинается с 'АРИ_Вид'")]
-        [DefaultValue("АРИ_Вид")]
-        public string BlockNameViewStart { get; set; } = "АРИ_Вид";
+        [Description("Имя блока вида начинается с 'АИ_Вид'")]
+        [DefaultValue("АИ_Вид")]
+        public string BlockNameViewStart { get; set; } = "АИ_Вид";
 
         [Category("Блоки")]
         [DisplayName("Имя блока номера помещение")]
         [Description("Имя блока номера помещение")]
-        [DefaultValue("АРИ_Номер_Помещения")]
-        public string BlockNameRoomNumber { get; set; } = "АРИ_Номер_Помещения";
+        [DefaultValue("АИ_Номер_Помещения")]
+        public string BlockNameRoomNumber { get; set; } = "АИ_Номер_Помещения";
 
         public static Options Load()
         {

@@ -157,7 +157,7 @@ namespace AR_Materials.Model.Interiors
         /// </summary>        
         public void CreateRoll(Point3d ptStart, BlockTableRecord btr)
         {
-            var rooms = Rooms.Where(r => r.HasRoll).OrderBy(r => r.Number?.Num);
+            var rooms = Rooms.Where(r => r.HasRoll).OrderBy(r => r.Number.Num);
             if (!rooms.Any())
             {
                 return;
@@ -170,16 +170,19 @@ namespace AR_Materials.Model.Interiors
             string textValue = string.Empty;
 
             // Подпись квартиры
-            var ptTextFlat = new Point3d(ptStart.X, ptStart.Y+DrawHeight-500, 0);
-            addText(btr, t, ptTextFlat, Name, textHeight, TextHorizontalMode.TextLeft);
+            var ptTextFlat = new Point3d(ptStart.X, ptStart.Y + DrawHeight - 500, 0);
+            using (var textFlat = addText(btr, t, ptTextFlat, Name, textHeight, TextHorizontalMode.TextLeft))
+            {
+                textFlat.LayerId = RollUpService.LayerNonPlotId;
+            }
 
             foreach (var room in rooms)
             {
-                Point2d ptRoll = ptRoom;                
+                Point2d ptRoll = ptRoom;
 
-                foreach (var roll in room.Rolls.OrderBy(r=>r.Num))
+                foreach (var roll in room.Rolls.OrderBy(r => r.Num, RollUpService.CompareName))
                 {
-                    Point2d ptSegment = ptRoll;                    
+                    Point2d ptSegment = ptRoll;
 
                     foreach (var segment in roll.Segments)
                     {
@@ -199,37 +202,43 @@ namespace AR_Materials.Model.Interiors
                         ptSegment = new Point2d(ptSegment.X + segment.Length, ptSegment.Y);
                     }
 
-                    var ptText = new Point3d(ptRoll.X + roll.Length * 0.5, ptRoll.Y + roll.Height + textHeight,0);
-                    textValue = "Вид-" + (roll.View == null ? "0" : roll.Num.ToString());
+                    var ptText = new Point3d(ptRoll.X + roll.Length * 0.5, ptRoll.Y + roll.Height + textHeight, 0);
+                    textValue = "Вид " + (roll.View == null ? "0" : roll.Num.ToString());
                     addText(btr, t, ptText, textValue, textHeight);
 
-                    ptRoll = new Point2d(ptRoll.X + roll.Length + opt.RollViewOffset, ptRoll.Y);                    
+                    ptRoll = new Point2d(ptRoll.X + roll.Length + opt.RollViewOffset, ptRoll.Y);
                 }
 
                 // Полилиня помещения                
-                var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);                
-                addRectangle(btr, t, ptRoomRectangle, room.DrawLength + 1000, room.DrawHeight);
-                
-                var ptTextRoom = new Point3d(ptRoom.X + room.DrawLength * 0.5, ptRoom.Y + room.Height+1000 + textHeight, 0);
-                textValue = "Помещение " + (room.Number == null ? "0" : room.Number.Num.ToString());
-                addText(btr, t, ptTextRoom, textValue, textHeight);
+                var ptRoomRectangle = new Point2d(ptRoom.X - 500, ptRoom.Y - 1000);
+                using (var plRoomRect = addRectangle(btr, t, ptRoomRectangle, room.DrawLength + 1000, room.DrawHeight))
+                {
+                    plRoomRect.LayerId = RollUpService.LayerNonPlotId;
+                }
 
-                ptRoom = new Point2d(ptRoom.X+ room.DrawLength + 2000, ptRoom.Y);
+                var ptTextRoom = new Point3d(ptRoom.X + room.DrawLength * 0.5, ptRoom.Y + room.Height + 1000 + textHeight, 0);
+                textValue = "Помещение " + (room.Number == null ? "0" : room.Number.Num.ToString());
+                using (var textRoom = addText(btr, t, ptTextRoom, textValue, textHeight))
+                {
+                    textRoom.LayerId = RollUpService.LayerNonPlotId;
+                }
+                ptRoom = new Point2d(ptRoom.X + room.DrawLength + 2000, ptRoom.Y);
             }
         }
 
-        private static void addRectangle(BlockTableRecord btr, Transaction t, Point2d ptSegment, double length, double height)
+        private static Polyline addRectangle(BlockTableRecord btr, Transaction t, Point2d ptSegment, double length, double height)
         {
-            Polyline plRol = new Polyline(4);
-            plRol.SetDatabaseDefaults();
-            plRol.AddVertexAt(0, ptSegment, 0, 0, 0);
-            plRol.AddVertexAt(1, new Point2d(ptSegment.X, ptSegment.Y + height), 0, 0, 0);
-            plRol.AddVertexAt(2, new Point2d(ptSegment.X + length, ptSegment.Y + height), 0, 0, 0);
-            plRol.AddVertexAt(3, new Point2d(ptSegment.X + length, ptSegment.Y), 0, 0, 0);
-            plRol.Closed = true;
+            Polyline pl = new Polyline(4);
+            pl.SetDatabaseDefaults();
+            pl.AddVertexAt(0, ptSegment, 0, 0, 0);
+            pl.AddVertexAt(1, new Point2d(ptSegment.X, ptSegment.Y + height), 0, 0, 0);
+            pl.AddVertexAt(2, new Point2d(ptSegment.X + length, ptSegment.Y + height), 0, 0, 0);
+            pl.AddVertexAt(3, new Point2d(ptSegment.X + length, ptSegment.Y), 0, 0, 0);
+            pl.Closed = true;
 
-            btr.AppendEntity(plRol);
-            t.AddNewlyCreatedDBObject(plRol, true);            
+            btr.AppendEntity(pl);
+            t.AddNewlyCreatedDBObject(pl, true);
+            return pl;       
         }
 
         private static RotatedDimension addDim(BlockTableRecord btr, Transaction t,
@@ -243,30 +252,28 @@ namespace AR_Materials.Model.Interiors
             return dim;
         }
 
-        private static void addText(BlockTableRecord btr, Transaction t, Point3d pt, string value, double height,
+        private static DBText addText(BlockTableRecord btr, Transaction t, Point3d pt, string value, double height,
             TextHorizontalMode horMode = TextHorizontalMode.TextCenter)
         {
             // Подпись развертки - номер вида
-            using (DBText text = new DBText())
+            DBText text = new DBText();
+            text.SetDatabaseDefaults();
+            text.Height = height;
+            text.TextStyleId = RollUpService.IdTextStylePik;
+            text.TextString = value;
+            if (horMode == TextHorizontalMode.TextLeft)
             {
-                text.SetDatabaseDefaults();
-                text.Height = height;
-                text.TextStyleId = RollUpService.IdTextStylePik;
-                text.TextString = value;
-                if (horMode == TextHorizontalMode.TextLeft)
-                {
-                    text.Position = pt;
-                }
-                else
-                {
-                    text.HorizontalMode = horMode;
-                    text.AlignmentPoint = pt;
-                    text.AdjustAlignment(btr.Database);
-                }                
-
-                btr.AppendEntity(text);
-                t.AddNewlyCreatedDBObject(text, true);
+                text.Position = pt;
             }
+            else
+            {
+                text.HorizontalMode = horMode;
+                text.AlignmentPoint = pt;
+                text.AdjustAlignment(btr.Database);
+            }
+            btr.AppendEntity(text);
+            t.AddNewlyCreatedDBObject(text, true);
+            return text;
         }
     }
 }

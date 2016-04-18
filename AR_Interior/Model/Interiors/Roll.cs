@@ -15,7 +15,7 @@ namespace AR_Materials.Model.Interiors
     /// </summary>
     public class Roll
     {
-        public int Num { get; set; }
+        public string  Num { get; set; }
         public List<RollSegment> Segments { get; set; }
         public Room Room { get; set; }
         public View View { get; set; }

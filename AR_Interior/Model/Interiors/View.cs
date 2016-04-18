@@ -24,7 +24,7 @@ namespace AR_Materials.Model.Interiors
         public Vector2d Direction { get; set; }
         public Vector3d Direction3d { get; set; }
         public AttributeInfo AtrInfo { get; set; }
-        public int Number { get; set; }
+        public string Name { get; set; } = string.Empty;
         /// <summary>
         /// Расстояние до сегмента - перпендикулярно
         /// </summary>
@@ -42,9 +42,8 @@ namespace AR_Materials.Model.Interiors
             // Вектор направления вида
             Direction = Vector2d.XAxis.RotateBy(angleView);
             Direction3d = new Vector3d(Direction.X, Direction.Y, 0); //Vector3d.XAxis.RotateBy(angleView, Vector3d.ZAxis);
-            AtrInfo = atrView;
-            int num;
-            Number = int.TryParse(atrView.Text, out num) ? num : 0;
+            AtrInfo = atrView;            
+            Name = atrView.Text;
         }
 
         public static List<View> GetViews(BlockReference blRefView, string blName, Matrix3d transToModel)
@@ -52,7 +51,7 @@ namespace AR_Materials.Model.Interiors
             // Из блока вида - вытажить все виды
             List<View> views = new List<View>();
             var rotationBlRef = blRefView.Rotation;
-            var attrs = AcadLib.Blocks.AttributeInfo.GetAttrRefs(blRefView);
+            var attrs = AttributeInfo.GetAttrRefs(blRefView);
 
             var angleView = getAngleView(blRefView);
             if(angleView.Failure)
@@ -128,7 +127,7 @@ namespace AR_Materials.Model.Interiors
 
         public int CompareTo(View other)
         {
-            return Number.CompareTo(other?.Number);
+            return RollUpService.CompareName.Compare(Name, other?.Name);
         }
     }
 }

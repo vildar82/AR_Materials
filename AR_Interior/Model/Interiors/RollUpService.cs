@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AcadLib.Errors;
+using AcadLib.Layers;
 using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
@@ -22,6 +24,8 @@ namespace AR_Materials.Model.Interiors
         public static Database Db { get; private set; }
         public static ObjectId IdTextStylePik { get; set; }
         public static ObjectId IdDimStylePik { get; set; }
+        public static ObjectId LayerNonPlotId { get; set; }
+        public static AcadLib.Comparers.AlphanumComparator CompareName { get; set; } = AcadLib.Comparers.AlphanumComparator.New;
 
         /// <summary>
         /// Создание развертки для одного блока с помещениями
@@ -40,7 +44,12 @@ namespace AR_Materials.Model.Interiors
                     throw new Exception("Развертки не определены.");                
 
                 IdTextStylePik = Db.GetTextStylePIK();
-                IdDimStylePik = Db.GetDimStylePIK();                
+                IdDimStylePik = Db.GetDimStylePIK();
+
+                var liNonPlot = new LayerInfo("АР_Непечатный");
+                liNonPlot.IsPlotable = false;
+                liNonPlot.Color = Color.FromColorIndex(ColorMethod.None, 11);
+                LayerNonPlotId = LayerExt.GetLayerOrCreateNew(liNonPlot);
 
                 //// Temp - построения для проверки
                 //test(flat);

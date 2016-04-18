@@ -102,7 +102,7 @@ namespace AR_Materials.Model.Interiors
                         if (seg.View != null && !seg.IsPartition)
                         {
                             // определен вид.  
-                            roll.Num = seg.View.Number;
+                            roll.Num = seg.View.Name;
                             roll.View = seg.View;
                         }
                         segSomes.Add(seg);

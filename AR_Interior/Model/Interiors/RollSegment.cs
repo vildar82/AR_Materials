@@ -35,7 +35,7 @@ namespace AR_Materials.Model.Interiors
             Height = 2800;
             Direction = segLine.Direction;            
             Center = segLine.MidPoint;            
-            if (Length<300)
+            if (Length<Options.Instance.RollSegmentPartitionLength)
             {
                 IsPartition = true;
             }
