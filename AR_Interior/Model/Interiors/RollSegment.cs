@@ -32,7 +32,7 @@ namespace AR_Materials.Model.Interiors
             Index = index;
             Room = room;
             Length = segLine.Length;
-            Height = 2800;
+            Height = Options.Instance.RollHeight;
             Direction = segLine.Direction;            
             Center = segLine.MidPoint;            
             if (Length<Options.Instance.RollSegmentPartitionLength)

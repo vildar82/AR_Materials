@@ -45,6 +45,12 @@ namespace AR_Materials.Model.Interiors
         [DefaultValue(300)]
         public double RollSegmentPartitionLength { get; set; } = 300;
 
+        [Category("Развертки")]
+        [DisplayName("Высота стен")]
+        [Description("Высота стен разверток.")]
+        [DefaultValue(2660)]
+        public double RollHeight { get; set; } = 2660;        
+
         [Category("Блоки")]
         [DisplayName("Имя блока вида")]
         [Description("Имя блока вида начинается с 'АИ_Вид'")]
